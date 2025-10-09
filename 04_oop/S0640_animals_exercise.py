@@ -88,7 +88,39 @@ class Dog(Animal):
     def wag_tail(self):
         print(f"The {self.__class__.__name__} {self.name} wags it's {self.tail_lenght}cm tail")
 
-    def mate(self, father, mother):
+    def mate(self, father, mother, name):
+        child_name = name
+        child_height = father
+
+
+# class Creature:
+#     def __init__(self, name, height, weight, sound, female, legs):
+#         self.name = name
+#         self.height = height
+#         self.weight = weight
+#         self.sound = sound
+#         self.female = female
+#         self.legs = legs
+#
+    @classmethod
+    def combine(cls, obj1, obj2):
+        # Example logic to combine attributes:
+        new_name = obj1.name + "-" + obj2.name
+        new_height = (obj1.height + obj2.height) / 2
+        new_weight = (obj1.weight + obj2.weight) / 2
+        new_sound = obj1.sound  # take the first object's sound for instance
+        new_female = obj1.female or obj2.female  # or some logic
+        new_legs = max(obj1.legs, obj2.legs)
+
+        # Create and return new combined object
+        return cls(new_name, new_height, new_weight, new_sound, new_female, new_legs)
+#
+# # Usage:
+# parent1 = Creature("Alpha", 180, 75, "Roar", True, 4)
+# parent2 = Creature("Beta", 190, 85, "Growl", False, 4)
+# child = Creature.combine(parent1, parent2)
+# print(child.name, child.height, child.female)  # Alpha-Beta 185.0 True
+
 
 
 dog1 = Dog("Sniffles", "woof", 30, 15, 4, False, 10, True)
