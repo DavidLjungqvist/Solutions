@@ -55,9 +55,17 @@ Når dit program er færdigt, skal du skubbe det til dit github-repository.
 
 lines = []
 
-lines.append({'0\'s': 0})
-lines.append({'0\'s': 1, '1\'s': 1, '2\'s': 0})
-lines.append({'0\'s': 2, '1\'s': 2, '2\'s': 2, '3\'s': 0})
+lines.append({'0': 0})
+lines.append({'0': 1, '1': 1, '2': 0})
+lines.append({'0': 2, '1': 2, '2': 2, '3': 0})
+count_dict = {'0': 0, '1': 0, '2': 0, '3': 0}
+
+def count_number(number):
+    for line in lines:
+        for key in line:
+            if line[key] == number:
+                count_dict[key] += 1
+
 
 
     # for m in range(my_dict):
@@ -78,7 +86,7 @@ for l in range(len(lines)):
         entry[f"{n}'s"] = count
         n += 1
 
-    print(entry)
+#    print(entry)
 
 
 
@@ -97,15 +105,6 @@ for l in range(len(lines)):
     # value_counts = Counter(my_dict.values())
     # dict_sorted_by_keys = {key: value_counts[key] for key in sorted(value_counts)}
 
-
-
-
-
-
-
-
-
-
 # inventory()
 
 # def inventory(rows):
@@ -114,3 +113,5 @@ for l in range(len(lines)):
 #     current_line_dictionary = {
 #         f"{nummeral}'s" :
 #     }
+
+print(count_dict)
