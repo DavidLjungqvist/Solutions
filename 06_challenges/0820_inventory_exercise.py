@@ -53,18 +53,24 @@ Når dit program er færdigt, skal du skubbe det til dit github-repository.
 
     # list_of_dicts = []
 
-lines = []
 
-lines.append({'0': 0})
-lines.append({'0': 1, '1': 1, '2': 0})
-lines.append({'0': 2, '1': 2, '2': 2, '3': 0})
+    # lines.append({'0': 0})
+    # lines.append({'0': 1, '1': 1, '2': 0})
+    # lines.append({'0': 2, '1': 2, '2': 2, '3': 0})
+
+
+
+
+
 count_dict = {'0': 0, '1': 0, '2': 0, '3': 0}
 
-def count_number(number):
-    for line in lines:
-        for key in line:
-            if line[key] == number:
-                count_dict[key] += 1
+# def count_number(number):
+#     for line in lines:
+#         for key in line:
+#             if line[key] == number:
+#                 count_dict[key] += 1
+
+
 
 
 
@@ -72,19 +78,19 @@ def count_number(number):
 
 
 
-for l in range(len(lines)):
-    n = 0
-    entry = {}
-    while True:
-        # entry[f"{n}'s"] = list(my_dict.values()).count(n)
-        count = list(lines[l].values()).count(n)
-
-
-        if count == 0:
-            break
-
-        entry[f"{n}'s"] = count
-        n += 1
+# for l in range(len(lines)):
+#     n = 0
+#     entry = {}
+#     while True:
+#         # entry[f"{n}'s"] = list(my_dict.values()).count(n)
+#         count = list(lines[l].values()).count(n)
+#
+#
+#         if count == 0:
+#             break
+#
+#         entry[f"{n}'s"] = count
+#         n += 1
 
 #    print(entry)
 
@@ -114,4 +120,37 @@ for l in range(len(lines)):
 #         f"{nummeral}'s" :
 #     }
 
-print(count_dict)
+
+def main(number_of_lines):
+    lines = []
+    for n in range(number_of_lines):
+        lines = count_lines(lines)
+    for i in lines:
+        print(i)
+
+
+def count_number(number, current_line, lines):
+    number_amount = 0
+    for line in lines:
+        for key in line.values():
+            if key == number:
+                number_amount += 1
+    for key in current_line.values():
+        if key == number:
+            number_amount += 1
+    return number_amount
+
+
+def count_lines(lines):
+    n = 0
+    new_dict = {}
+    while True:
+        number_amount = count_number(n, new_dict, lines)
+        new_dict[n] = number_amount
+        n += 1
+        if number_amount == 0:
+            lines.append(new_dict)
+            return lines
+
+
+main(7)

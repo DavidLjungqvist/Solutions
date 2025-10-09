@@ -22,8 +22,8 @@ def reset():
     entry_2.delete(0, tk.END)
     entry_1.configure(state='normal')
     entry_1.delete(0, tk.END)
-    entry_2.configure(state='readonly')
     label_1.config(text="")
+    entry_2.configure(state='readonly')
 
 
 def read_left_entry():
@@ -42,7 +42,7 @@ def choose_operator_add():
     global operator
     operator = "+"
     current_calculation = num_1
-    label_1.config(text=str(current_calculation))
+    # label_1.config(text=str(current_calculation))
 
 
 def choose_operator_subtract():
@@ -51,7 +51,7 @@ def choose_operator_subtract():
     global operator
     operator = "-"
     current_calculation = num_1
-    label_1.config(text=str(current_calculation))
+    # label_1.config(text=str(current_calculation))
 
 
 def choose_operator_divide():
@@ -60,7 +60,7 @@ def choose_operator_divide():
     global operator
     operator = "/"
     current_calculation = num_1
-    label_1.config(text=str(current_calculation))
+    # label_1.config(text=str(current_calculation))
 
 
 def choose_operator_multiply():
@@ -69,21 +69,31 @@ def choose_operator_multiply():
     global operator
     operator = "*"
     current_calculation = num_1
-    label_1.config(text=str(current_calculation))
+    # label_1.config(text=str(current_calculation))
 
 
 def calculate_result():
-    if operator == "+":
-        result = float(read_left_entry()) + float(read_right_entry())
-    elif operator == "-":
-        result = float(read_left_entry()) - float(read_right_entry())
-    elif operator == "/":
-        result = float(read_left_entry()) / float(read_right_entry())
-    elif operator == "*":
-        result = float(read_left_entry()) * float(read_right_entry())
     global current_result
-    current_result = result
-    update_label()
+    try:
+        if operator == "+":
+            result = float(read_left_entry()) + float(read_right_entry())
+        elif operator == "-":
+            result = float(read_left_entry()) - float(read_right_entry())
+        elif operator == "/":
+            result = float(read_left_entry()) / float(read_right_entry())
+        elif operator == "*":
+            result = float(read_left_entry()) * float(read_right_entry())
+        current_result = result
+    except:
+        result = 0
+        current_result = 0
+        print("Error")
+    label_text = label_1.cget("text")
+    if label_text:
+        current_calculation = f"({label_text} {operator} {str(read_right_entry())})"
+    else:
+        current_calculation = f"({str(read_left_entry())} {operator} {str(read_right_entry())})"
+    label_1.config(text=str(current_calculation))
     entry_1.configure(state='normal')
     entry_1.delete(0, tk.END)
     entry_2.delete(0, tk.END)
@@ -113,8 +123,8 @@ main_window.title("Calculator")
 main_window.geometry("400x400")
 
 
-label_1 = tk.Label(main_window, width=20, text="")
-label_1.grid(row=0, column=0, padx=10, pady=4)
+label_1 = tk.Label(main_window, width=40, text="")
+label_1.grid(row=0, column=0, padx=10, pady=4, columnspan=2)
 entry_1 = tk.Entry(main_window, width=20)
 entry_1.grid(row=1, column=0, padx=10, pady=4, ipady=4)
 entry_2 = tk.Entry(main_window, width=20, state="readonly")
