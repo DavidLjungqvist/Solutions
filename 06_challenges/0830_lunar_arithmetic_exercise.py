@@ -33,3 +33,9 @@ Når dit program er færdigt, skal du skubbe det til dit github-repository.
 
 class Lunar_int():
     def __init__(self):
+        self.first_number
+        self.second_number
+
+    def lunar_addition(self):
+
+    def lunar_multiplication(self):

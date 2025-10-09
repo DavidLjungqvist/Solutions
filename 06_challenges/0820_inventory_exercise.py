@@ -121,22 +121,16 @@ count_dict = {'0': 0, '1': 0, '2': 0, '3': 0}
 #     }
 
 
-def main(number_of_lines):
-    lines = []
-    for n in range(number_of_lines):
-        lines = count_lines(lines)
-    for i in lines:
-        print(i)
 
 
 def count_number(number, current_line, lines):
     number_amount = 0
     for line in lines:
-        for key in line.values():
-            if key == number:
+        for value in line.values():
+            if value == number:
                 number_amount += 1
-    for key in current_line.values():
-        if key == number:
+    for value in current_line.values():
+        if value == number:
             number_amount += 1
     return number_amount
 
@@ -153,4 +147,12 @@ def count_lines(lines):
             return lines
 
 
-main(7)
+def main(number_of_lines):
+    lines = []
+    for n in range(number_of_lines):
+        lines = count_lines(lines)
+    for i in lines:
+        print(i)
+
+
+main(16)
