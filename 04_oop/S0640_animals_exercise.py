@@ -87,25 +87,28 @@ class Dog(Animal):
         return (f"{self.name} is a {self.__class__.__name__} and says: {self.sound}. {"She's" if self.female else "He's"} {self.height}cm tall, weighs {self.weight}kg and has {self.legs} legs. "
                 f"{self.name} also has a tail that's {self.tail_lenght}cm long and {"hunts" if self.hunts_sheep else "doesnt hunt"} sheep")
 
+    def __add__(self, other):
+        return mate(self, other, "Roses")
+
     def wag_tail(self):
         print(f"The {self.__class__.__name__} {self.name} wags it's {self.tail_lenght}cm tail")
 
 
 def mate(father, mother, name: str):
-    if father.female or not mother.female:
-        return "Wrong genders exiting function"
+    if father.female or not mother.female:  # Checks if genders are in the correct parameter slots
+        return "Wrong genders, can't mate"  # Exits function if genders are incorrect
     child_name = name
     child_female = 0.5 > random.random()
-    child_sound = mother.sound if child_female else father.sound
-    child_height = (father.height + mother.height) / 2
-    if not child_female:
+    child_sound = mother.sound if child_female else father.sound  # Child takes the sound of the same gendered parrent
+    child_height = (father.height + mother.height) / 2  # Child takes the average height of parents
+    if not child_female:  # If the child is male it's taller
         child_height += 3
-    child_weight = 9 + int((child_height / 5))
+    child_weight = 9 + child_height // 5  # Calculates childs weight based on the height
     child_legs = 4
-    if random.random() < 0.05:
+    if random.random() < 0.05:  # Small chance that the child is "mutated" and has an extra leg
         child_legs += 1
-    child_tail_lenght = (father.tail_lenght + mother.tail_lenght) / 2
-    child_hunts_sheep = father.hunts_sheep or mother.hunts_sheep
+    child_tail_lenght = (father.tail_lenght + mother.tail_lenght) / 2  # Takes the average lenght of parents tail
+    child_hunts_sheep = father.hunts_sheep or mother.hunts_sheep  # Child will hunt sheep if either of the parents also hunts sheep
     return Dog(child_name, child_sound, child_height, child_weight, child_legs, child_female, child_tail_lenght, child_hunts_sheep)
 
 
@@ -118,7 +121,9 @@ dog1.wag_tail()
 
 
 dog3 = mate(dog1, dog2, "Cupcake")
+dog4 = dog1 + dog2
 
 print(dog1)
 print(dog2)
 print(dog3)
+print(dog4)
