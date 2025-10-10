@@ -58,6 +58,8 @@ Hvis du går i stå, så spørg google, de andre elever, en AI eller læreren.
 Når dit program er færdigt, skal du skubbe det til dit github-repository.
 Send derefter denne Teams-meddelelse til din lærer: <filename> færdig
 Fortsæt derefter med den næste fil."""
+import random
+
 
 class Animal:
     def __init__(self, name: str, sound: str, height: float, weight: float, legs: int, female: bool):
@@ -82,51 +84,41 @@ class Dog(Animal):
         self.hunts_sheep = hunts_sheep
 
     def __repr__(self):
-        return (f"{self.name} is an {self.__class__.__name__} and says: {self.sound}. {"She's" if self.female else "He's"} {self.height}cm tall, weighs {self.weight}kg and has {self.legs} legs. "
+        return (f"{self.name} is a {self.__class__.__name__} and says: {self.sound}. {"She's" if self.female else "He's"} {self.height}cm tall, weighs {self.weight}kg and has {self.legs} legs. "
                 f"{self.name} also has a tail that's {self.tail_lenght}cm long and {"hunts" if self.hunts_sheep else "doesnt hunt"} sheep")
 
     def wag_tail(self):
         print(f"The {self.__class__.__name__} {self.name} wags it's {self.tail_lenght}cm tail")
 
-    def mate(self, father, mother, name):
-        child_name = name
-        child_height = father
+
+def mate(father, mother, name: str):
+    if father.female or not mother.female:
+        return "Wrong genders exiting function"
+    child_name = name
+    child_female = 0.5 > random.random()
+    child_sound = mother.sound if child_female else father.sound
+    child_height = (father.height + mother.height) / 2
+    if not child_female:
+        child_height += 3
+    child_weight = 9 + int((child_height / 5))
+    child_legs = 4
+    if random.random() < 0.05:
+        child_legs += 1
+    child_tail_lenght = (father.tail_lenght + mother.tail_lenght) / 2
+    child_hunts_sheep = father.hunts_sheep or mother.hunts_sheep
+    return Dog(child_name, child_sound, child_height, child_weight, child_legs, child_female, child_tail_lenght, child_hunts_sheep)
 
 
-# class Creature:
-#     def __init__(self, name, height, weight, sound, female, legs):
-#         self.name = name
-#         self.height = height
-#         self.weight = weight
-#         self.sound = sound
-#         self.female = female
-#         self.legs = legs
-#
-    @classmethod
-    def combine(cls, obj1, obj2):
-        # Example logic to combine attributes:
-        new_name = obj1.name + "-" + obj2.name
-        new_height = (obj1.height + obj2.height) / 2
-        new_weight = (obj1.weight + obj2.weight) / 2
-        new_sound = obj1.sound  # take the first object's sound for instance
-        new_female = obj1.female or obj2.female  # or some logic
-        new_legs = max(obj1.legs, obj2.legs)
+dog1 = Dog("Sniffles", "woof", 33, 16, 4, False, 10, True)
+dog2 = Dog("Violet", "woofie", 25, 13, 4, True, 8, False)
 
-        # Create and return new combined object
-        return cls(new_name, new_height, new_weight, new_sound, new_female, new_legs)
-#
-# # Usage:
-# parent1 = Creature("Alpha", 180, 75, "Roar", True, 4)
-# parent2 = Creature("Beta", 190, 85, "Growl", False, 4)
-# child = Creature.combine(parent1, parent2)
-# print(child.name, child.height, child.female)  # Alpha-Beta 185.0 True
-
-
-
-dog1 = Dog("Sniffles", "woof", 30, 15, 4, False, 10, True)
 
 dog1.make_noise()
 dog1.wag_tail()
 
 
+dog3 = mate(dog1, dog2, "Cupcake")
+
 print(dog1)
+print(dog2)
+print(dog3)
