@@ -34,33 +34,58 @@ Når dit program er færdigt, skal du skubbe det til dit github-repository.
 class Lunar_int():
     def __init__(self, value: int):
         self.value = value
-        self.lenght = len(str(abs(value)))
 
-    def __getitem__(self, index):
-        return self.digits[index]
+    def __repr__(self):
+        return (self.value)
 
     def __add__(self, other):
-        result = ""
-        if self.lenght >= other.lenght:
-            for digit in range(self.lenght):
-                if digit >= other[digit]:
-                    new_digit = digit
-                else:
-                    new_digit = self[digit]
-                result += new_digit
-        else:
-            for digit in range(other.lenght):
-                if digit >= self[digit]:
-                    new_digit = digit
-                else:
-                    new_digit = other[digit]
-                result += new_digit
-        return result
+        return Lunar_int(lunar_addition(self, other))
 
-    # def lunar_addition(self):
+        # result = ""
+        # if self.lenght >= other.lenght:
+        #     for digit in range(self.lenght):
+        #         if digit >= other[digit]:
+        #             new_digit = digit
+        #         else:
+        #             new_digit = self[digit]
+        #         result += new_digit
+        # else:
+        #     for digit in range(other.lenght):
+        #         if digit >= self[digit]:
+        #             new_digit = digit
+        #         else:
+        #             new_digit = other[digit]
+        #         result += new_digit
+        # return result
+
 
     # TRY TO PUT THE CODE IN A FUNCTION AND CALL THE FUNCTION UNDER __add__
 
+def lunar_addition(self, other):
+    # first_list = []
+    # second_list = []
+    result = []
+    # for number in range(self):  # Runs through the first number and appends each digit into "first_list"
+    #     first_list.append(number)
+    # for number in range(other):  # Runs through the second number and append each digit into "second_list"
+    #     second_list.append(number)
+    first_list = [int(d) for d in str(self.value)]
+    second_list = [int(d) for d in str(other.value)]
+    if len(first_list) >= len(second_list):  # Compares list lenghts and uses the greater lenght list as a reference
+        for digit in range(len(first_list) - 1, (len(first_list) - len(second_list)), -1):
+            if digit >= second_list[digit]:
+                greater_digit = digit
+            else:
+                greater_digit = second_list[digit]
+            result.append(greater_digit)
+    else:
+        for digit in range(second_list, len(second_list) - len(first_list), -1):
+            if digit >= second_list[digit]:
+                greater_digit = digit
+            else:
+                greater_digit = second_list[digit]
+            result.append(greater_digit)
+    print(result)
 
 
     # def lunar_multiplication(self):
@@ -69,3 +94,4 @@ number1 = Lunar_int(120)
 number2 = Lunar_int(315)
 
 number3 = number1 + number2
+# print(number3)
