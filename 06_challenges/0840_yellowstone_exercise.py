@@ -54,27 +54,35 @@ Når dit program er færdigt, skal du skubbe det til dit github-repository.
 """
 
 
-yellowstone_sequence = [1, 2, 3]
+yellowstone_sequence = [1, 2, 3, 4]
 
 # def compare_new_number(new_num):
 
 def common_divider(new_num):
     max_value = max(yellowstone_sequence[-1], new_num)
+    common_divider = False
     for i in range(1, max_value):
-        if yellowstone_sequence[-1] / i == and new_num  / i
+        if yellowstone_sequence[-2] % i == 0 and new_num % i == 0:
+            common_divider = True
+    return common_divider
 
 
-def no_common_terms():
+def no_common_terms(new_num):
+    max_value = max(yellowstone_sequence[-1], new_num)
+    no_common_terms = False
+    for i in range(1, max_value):
+        if yellowstone_sequence[-1] % i != 0 and new_num % i != 0:
+            no_common_terms = True
+    return no_common_terms
 
 
 def new_number():
     for new_num in range(1000):
-        if new_num not in yellowstone_sequence:
-            if new_num % yellowstone_sequence[-1] > 0 and new_num % yellowstone_sequence[-2] == 0:
-                yellowstone_sequence.append(new_num)
+        if new_num not in yellowstone_sequence and common_divider(new_num) and no_common_terms(new_num):
+            yellowstone_sequence.append(new_num)
                 # new_sequence = yellowstone_sequence.copy()
                 # updated_used_number = used_numbers.copy()
-                break
+            break
 
 
 def main(sequence_lenght):
