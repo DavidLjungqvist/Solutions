@@ -70,15 +70,22 @@ def lunar_addition(self, other):
     first_list = [int(d) for d in str(self.value)]
     second_list = [int(d) for d in str(other.value)]
     if len(first_list) >= len(second_list):  # Compares list lenghts and uses the greater lenght list as a reference
-        for i in range(len(first_list) - 1, (len(first_list) - len(second_list)) - 1, -1):
-            max_value = max(first_list[i], second_list[i])
-            result.append(max_value)
+        longer_number, shorter_number = first_list, second_list
     else:
-        for i in range(len(second_list) - 1, (len(second_list) - len(first_list)) - 1, -1):
-            max_value = max(second_list[i], first_list[i])
-            result.append(max_value)
+        longer_number, shorter_number = second_list, first_list
+    for i, j in zip(shorter_number, longer_number):
+        max_value = max(i, j)
+        result.append(max_value)
+        print(i)
+        print(j)
+    # for i in range(len(longer_number) - 1, (len(longer_number) - len(shorter_number)) - 1, -1):
+    #         max_value = max(longer_number[i], shorter_number[i])
+    #         result.append(max_value)
+
     print(result)
     # return Lunar_int(result)
+
+#  The zip should end and the remaining numbers in the list have to merged to the result
 
 
     # def lunar_multiplication(self):
