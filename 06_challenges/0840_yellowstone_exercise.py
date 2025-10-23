@@ -53,6 +53,14 @@ Hvis du går i stå, så spørg google, de andre elever, en AI eller læreren.
 Når dit program er færdigt, skal du skubbe det til dit github-repository.
 """
 
+def common_divider(first_factors, second_factors):
+    return bool(first_factors.intersection(second_factors))
+
+def no_common_terms(first_factors, second_factors):
+    boolean = bool(first_factors.intersection(second_factors))
+    return not boolean
+
+
 def find_prime_factors(number):
     prime_numbers = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97]
     factors_of_number = []
@@ -77,14 +85,6 @@ def calculate_factor_conditions(new_num, yellowstone_sequence):
         return True
     else:
         return False
-
-
-def common_divider(first_factors, second_factors):
-    return bool(first_factors.intersection(second_factors))
-
-def no_common_terms(first_factors, second_factors):
-    boolean = bool(first_factors.intersection(second_factors))
-    return not boolean
 
 
 def new_number(yellowstone_sequence):
