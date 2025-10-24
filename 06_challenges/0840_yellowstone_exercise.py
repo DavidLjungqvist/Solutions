@@ -102,4 +102,4 @@ def main(sequence_lenght: int, yellowstone_sequence: list):
     print(yellowstone_sequence)
 
 
-main(10, [1, 2, 3])
+main(40, [1, 2, 3])

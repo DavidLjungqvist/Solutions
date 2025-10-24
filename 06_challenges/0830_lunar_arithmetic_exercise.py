@@ -41,57 +41,34 @@ class Lunar_int():
     def __add__(self, other):
         return Lunar_int(lunar_addition(self, other))
 
-        # result = ""
-        # if self.lenght >= other.lenght:
-        #     for digit in range(self.lenght):
-        #         if digit >= other[digit]:
-        #             new_digit = digit
-        #         else:
-        #             new_digit = self[digit]
-        #         result += new_digit
-        # else:
-        #     for digit in range(other.lenght):
-        #         if digit >= self[digit]:
-        #             new_digit = digit
-        #         else:
-        #             new_digit = other[digit]
-        #         result += new_digit
-        # return result
-
 
 def lunar_addition(self, other):
-    # first_list = []
-    # second_list = []
     result = []
-    # for number in range(self):  # Runs through the first number and appends each digit into "first_list"
-    #     first_list.append(number)
-    # for number in range(other):  # Runs through the second number and append each digit into "second_list"
-    #     second_list.append(number)
+
     first_list = [int(d) for d in str(self.value)]
     second_list = [int(d) for d in str(other.value)]
     if len(first_list) >= len(second_list):  # Compares list lenghts and uses the greater lenght list as a reference
         longer_number, shorter_number = first_list, second_list
     else:
         longer_number, shorter_number = second_list, first_list
+    first_digits = []
+    digit_difference = len(longer_number) - len(shorter_number)
+    for digit in range(digit_difference):
+        first_digits.append(longer_number[digit])
+    for digit in range(digit_difference):
+        longer_number.pop(1)
+    for i in first_digits:
+        result.append(i)
     for i, j in zip(shorter_number, longer_number):
         max_value = max(i, j)
         result.append(max_value)
         print(i)
         print(j)
-    # for i in range(len(longer_number) - 1, (len(longer_number) - len(shorter_number)) - 1, -1):
-    #         max_value = max(longer_number[i], shorter_number[i])
-    #         result.append(max_value)
-
     print(result)
-    # return Lunar_int(result)
 
-#  The zip should end and the remaining numbers in the list have to merged to the result
+def lunar_multiplication(self, other):
 
 
-    # def lunar_multiplication(self):
-
-number1 = Lunar_int(120)
-number2 = Lunar_int(315)
-
+number1 = Lunar_int(820)
+number2 = Lunar_int(12315)
 number3 = number1 + number2
-# print(number3)
