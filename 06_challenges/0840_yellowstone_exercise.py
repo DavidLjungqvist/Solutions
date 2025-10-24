@@ -53,24 +53,24 @@ Hvis du går i stå, så spørg google, de andre elever, en AI eller læreren.
 Når dit program er færdigt, skal du skubbe det til dit github-repository.
 """
 
-def common_divider(first_factors, second_factors):
+def have_common_divider(first_factors, second_factors):
     return bool(first_factors.intersection(second_factors))
-
-def no_common_terms(first_factors, second_factors):
-    boolean = bool(first_factors.intersection(second_factors))
-    return not boolean
 
 
 def find_prime_factors(number):
     prime_numbers = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97]
     factors_of_number = []
     current_calculation = number
-    while current_calculation != 1:
+    small_enough = True
+    while current_calculation != 1 and small_enough:
         for i in prime_numbers:
             if current_calculation % i == 0:
                 current_calculation /= i
                 factors_of_number.append(i)
                 break
+            elif i == prime_numbers[-1]:
+                print("Number too big")
+                small_enough = False
     unique_factors_of_number = set(factors_of_number)
     return unique_factors_of_number
 
@@ -79,15 +79,15 @@ def calculate_factor_conditions(new_num, yellowstone_sequence):
     unique_factors_new_number = find_prime_factors(new_num)
     unique_factors_yellowstone_last = find_prime_factors(yellowstone_sequence[-1])
     unique_factors_yellowstone_second_last = find_prime_factors(yellowstone_sequence[-2])
-    no_common_terms_bool = no_common_terms(unique_factors_new_number, unique_factors_yellowstone_last)
-    common_divider_bool = common_divider(unique_factors_new_number, unique_factors_yellowstone_second_last)
+    no_common_terms_bool = not have_common_divider(unique_factors_new_number, unique_factors_yellowstone_last)
+    common_divider_bool = have_common_divider(unique_factors_new_number, unique_factors_yellowstone_second_last)
     if no_common_terms_bool and common_divider_bool:
         return True
     else:
         return False
 
 
-def new_number(yellowstone_sequence):
+def generate_new_number(yellowstone_sequence):
     for new_num in range(1, 1000):
         if new_num not in yellowstone_sequence:
             if calculate_factor_conditions(new_num, yellowstone_sequence):
@@ -98,8 +98,8 @@ def new_number(yellowstone_sequence):
 
 def main(sequence_lenght: int, yellowstone_sequence: list):
     for i in range(sequence_lenght):
-        yellowstone_sequence = new_number(yellowstone_sequence)
+        yellowstone_sequence = generate_new_number(yellowstone_sequence)
     print(yellowstone_sequence)
 
 
-main(40, [1, 2, 3])
+main(50, [1, 2, 3])

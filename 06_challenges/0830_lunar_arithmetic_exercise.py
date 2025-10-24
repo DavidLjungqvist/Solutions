@@ -36,15 +36,16 @@ class Lunar_int():
         self.value = value
 
     def __repr__(self):
-        return (self.value)
+        return self.value
 
     def __add__(self, other):
         return Lunar_int(lunar_addition(self, other))
 
+    def __mul__(self, other):
+        return Lunar_int(lunar_multiplication(self, other))
 
 def lunar_addition(self, other):
     result = []
-
     first_list = [int(d) for d in str(self.value)]
     second_list = [int(d) for d in str(other.value)]
     if len(first_list) >= len(second_list):  # Compares list lenghts and uses the greater lenght list as a reference
@@ -62,13 +63,22 @@ def lunar_addition(self, other):
     for i, j in zip(shorter_number, longer_number):
         max_value = max(i, j)
         result.append(max_value)
-        print(i)
-        print(j)
-    print(result)
+    return list_to_integer(result)
+
+
+def list_to_integer(list_of_ints):
+    return int(''.join(map(str, list_of_ints)))
+
 
 def lunar_multiplication(self, other):
+    result = []
+    first_list = [int(d) for d in str(self.value)]
+    second_list = [int(d) for d in str(other.value)]
+    for multiplicant in reversed(first_list):
+        for multiplier in reversed(second_list):
 
 
-number1 = Lunar_int(820)
+number1 = Lunar_int(  820)
 number2 = Lunar_int(12315)
 number3 = number1 + number2
+print(number3.value)
