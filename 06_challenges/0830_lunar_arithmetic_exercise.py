@@ -71,14 +71,38 @@ def list_to_integer(list_of_ints):
 
 
 def lunar_multiplication(self, other):
-    result = []
+    result_list = []
     first_list = [int(d) for d in str(self.value)]
     second_list = [int(d) for d in str(other.value)]
-    for multiplicant in reversed(first_list):
-        for multiplier in reversed(second_list):
+    reversed_first_list = list(reversed(first_list))
+    reversed_second_list = list(reversed(second_list))
+    for i, num1 in enumerate(reversed_first_list):
+        result = [0] * i
+        for num2 in reversed_second_list:
+            min_num = min(num1, num2)
+            result.append(min_num)
+        result_list.append(result)
+    reversed_result_list = []
+    for i in range(len(result_list)):
+        # reversed_result_list.append(list(reversed(result_list[i])))
+        current_list = result_list[i]
+        reversed_list = list(reversed(current_list))
+        reversed_result_list.append(reversed_list)
+    result = []
+    for items in zip(*result_list):
+        result.append(max(items))
+    print(result)
+
+# def multiply_step_one():
 
 
-number1 = Lunar_int(  820)
-number2 = Lunar_int(12315)
-number3 = number1 + number2
-print(number3.value)
+
+# number1 = Lunar_int(  820)
+# number2 = Lunar_int(12315)
+# number3 = number1 + number2
+# print(number3.value)
+
+
+number4 = Lunar_int( 43)
+number5 = Lunar_int(136)
+number6 = number4 * number5
