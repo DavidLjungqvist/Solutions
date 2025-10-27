@@ -93,8 +93,14 @@ def lunar_multiplication(self, other):
         result.append(max(items))
     print(result)
 
-# def multiply_step_one():
-
+def multiply_part_two():
+    # result_list
+    result_list = [[1, 3, 5], [0, 2, 4, 6, 8], [3, 5, 7, 9]]
+    for i in result_list:
+        new_list = []
+        for j in result_list[i]:
+            new_list.append(j)
+        min_num = min(new_list)
 
 
 # number1 = Lunar_int(  820)
