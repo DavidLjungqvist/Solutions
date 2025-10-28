@@ -36,7 +36,10 @@ class Lunar_int():
         self.value = value
 
     def __repr__(self):
-        return self.value
+        return str(self.value)
+
+    # def __str__(self):
+    #     return str(self.value)
 
     def __add__(self, other):
         return Lunar_int(lunar_addition(self, other))
@@ -82,26 +85,38 @@ def lunar_multiplication(self, other):
             min_num = min(num1, num2)
             result.append(min_num)
         result_list.append(result)
-    reversed_result_list = []
-    for i in range(len(result_list)):
-        # reversed_result_list.append(list(reversed(result_list[i])))
-        current_list = result_list[i]
-        reversed_list = list(reversed(current_list))
-        reversed_result_list.append(reversed_list)
-    result = []
-    for items in zip(*result_list):
-        result.append(max(items))
-    print(result)
+    final_list = list(reversed(multiply_part_two(result_list)))
+    return list_to_integer(final_list)
 
-def multiply_part_two():
-    # result_list
-    result_list = [[1, 3, 5], [0, 2, 4, 6, 8], [3, 5, 7, 9]]
-    for i in result_list:
+
+    # reversed_result_list = []
+    # for i in range(len(result_list)):
+    #     reversed_result_list.append(list(reversed(result_list[i])))
+    #     current_list = result_list[i]
+    #     reversed_list = list(reversed(current_list))
+    #     reversed_result_list.append(reversed_list)
+    # result = []
+
+
+def multiply_part_two(result_list):
+    # result_list = [[1, 3, 5], [0, 2, 4, 6, 8], [3, 5, 7, 9]]
+    new_result_list = []
+    # i = 0
+    # while i < len(max(result_list, key=len)):
+    for digit_1 in range(len(max(result_list, key=len))):
         new_list = []
-        for j in result_list[i]:
-            new_list.append(j)
-        min_num = min(new_list)
+        for sub_list in result_list:
+            new_num = sub_list[digit_1] if digit_1 < len(sub_list) else 0
+            new_list.append(new_num)
+        max_num = max(new_list)
+        new_result_list.append(max_num)
+    return new_result_list
 
+
+# def is_prime(number):
+#     i = 1
+#     while i != number.value:
+#         if i *
 
 # number1 = Lunar_int(  820)
 # number2 = Lunar_int(12315)
@@ -112,3 +127,6 @@ def multiply_part_two():
 number4 = Lunar_int( 43)
 number5 = Lunar_int(136)
 number6 = number4 * number5
+print(number6)
+
+# multiply_part_two()
