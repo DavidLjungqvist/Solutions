@@ -5,6 +5,8 @@ Læs øvelsesbeskrivelsen i th1_exercise.py.
 
 import turtle  # this imports a library called "turtle". A library is (someone else's) python code, that you can use in your own program.
 import random
+from math import degrees
+
 from th3_service import distance, direction
 
 
@@ -23,8 +25,17 @@ class PlayerName1(turtle.Turtle):
 
         # Example for use of the service functions distance() and direction
         # print(f'{distance(positions[0], positions[1])=}   {direction(positions[0], positions[1])=}')  # print distance and direction from prey to hunter1
+        distance_list = []
+        for i in range(1, 4):
+            distance_list.append(int(distance(positions[0], positions[i])))
+        min_distance = min(distance_list)
+        closest_turtle_index = distance_list.index(min_distance)
+        closest_turtle_direction = direction(positions[0], positions[closest_turtle_index + 1])
 
-        degree = 3  # When the turtle rotates the same amount each turn,  it will just run in a circle. Make this function smarter!
+        turtle_backward = (self.orientation + 180) % 360
+        degree = closest_turtle_direction - turtle_backward # When the turtle rotates the same amount each turn,  it will just run in a circle. Make this function smarter!
+
+
         self.orientation += degree
         self.orientation %= 360
         # print(self.orientation)
