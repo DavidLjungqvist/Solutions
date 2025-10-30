@@ -34,8 +34,25 @@ class PlayerName1(turtle.Turtle):
 
         turtle_backward = (self.orientation + 180) % 360
         degree = closest_turtle_direction - turtle_backward # When the turtle rotates the same amount each turn,  it will just run in a circle. Make this function smarter!
+        x, y = positions[0]
+        if abs(x) > 270:
+            move_vertically = True
+        else:
+            move_vertically = False
+        if abs(y) > 270:
+            move_horizontally = True
+        else:
+            move_horizontally = False
 
-
+        if move_vertically and closest_turtle_direction > 180:
+            degree = 90 - self.orientation
+        elif move_vertically and closest_turtle_direction < 180:
+            degree = 270 - self.orientation
+        elif move_horizontally and (closest_turtle_direction + 90) % 360 < 180:
+            degree = 180 - self.orientation
+        elif move_horizontally and (closest_turtle_direction + 90) % 360 > 180:
+            degree = 360 - self.orientation
+        # elif move_horizontally and move_vertically:
         self.orientation += degree
         self.orientation %= 360
         # print(self.orientation)
@@ -45,6 +62,9 @@ class PlayerName1(turtle.Turtle):
         # Example for use of the service functions distance() and direction
         # print(f'{distance(self.position(), positions[0])=}   {direction(self.position(), positions[0])=}')  # print distance and direction from the current hunter to the prey
         degree = 1.5 # When the turtle rotates the same amount each turn,  it will just run in a circle. Make this function smarter!
+        # distance(self.position, positions[0])
+        direction_to_target = direction(self.position(), positions[0])
+        degree = direction_to_target - self.orientation
         self.orientation += degree
         self.orientation %= 360
         # print(self.orientation)

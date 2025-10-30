@@ -10,6 +10,8 @@ import turtle  # this imports a library called "turtle". A library is (someone e
 import random
 import th4_classes_constants as Tclass
 from th3_service import distance
+import sys
+print(sys.argv)
 
 # do NOT change these global constants!
 MAX_POS = 300    # x and y coordinates must be between -MAX_POS and +MAX_POS. (0, 0) is in the center of the screen.
