@@ -17,6 +17,18 @@ def create_test_data():
         session.add_all(new_items)
         session.commit()
 
+def select_all(classparam):
+    with Session(engine) as session:
+        records = session.scalars(select(classparam))
+        result = []
+        for record in records:
+            result.append(record)
+    return result
+
+
 if __name__ == "__main__":
+    engine = create_engine(Database, echo=False, future=True)
+    Base.metadata.create_all(engine)
+else:
     engine = create_engine(Database, echo=False, future=True)
     Base.metadata.create_all(engine)
