@@ -13,3 +13,8 @@ class Customer(Base):
 
     def convert_to_tuple(self):
         return self.id, self.surname, self.contact_info
+
+    @staticmethod
+    def convert_from_tuple(tuple_):
+        customer = Customer(id=tuple_[0], surname=tuple_[1], contact_info=tuple_[2])
+        return customer

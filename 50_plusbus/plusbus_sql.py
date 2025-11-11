@@ -25,6 +25,11 @@ def select_all(classparam):
             result.append(record)
     return result
 
+def create_record(record):
+    with Session(engine) as session:
+        record.id = None
+        session.add(record)
+        session.commit()
 
 if __name__ == "__main__":
     engine = create_engine(Database, echo=False, future=True)

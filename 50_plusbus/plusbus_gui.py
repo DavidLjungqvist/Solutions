@@ -1,6 +1,9 @@
 import tkinter
 import tkinter as tk
 from tkinter import ttk
+
+from sqlalchemy import values
+
 import plusbus_data as pbd
 import plusbus_sql as pbsql
 
@@ -13,6 +16,9 @@ treeview_selected = "#206030"
 oddrow = "#dddddd"
 evenrow = "#cccccc"
 
+
+def read_customer_entries():
+    return entry_customer_id.get(), entry_customer_surname.get(), entry_customer_contact.get(),
 
 def clear_customer_entries():
     entry_customer_id.delete(0, tk.END)
@@ -29,6 +35,12 @@ def edit_customer(_, tree):
     values = tree.item(index_selected, 'values')
     clear_customer_entries()
     write_customer_entries(values)
+
+def create_customer(tree, record):
+    customer = pbd.Customer.convert_from_tuple(record)
+    pbsql.create_record(customer)
+    clear_customer_entries()
+    refresh_treeview(tree, pbd.Customer)
 
 def read_table(tree, class_):
     count = 0
@@ -72,7 +84,7 @@ tree_scroll_customer.config(command=tree_customer.yview)
 tree_customer['columns'] = ("id", "surname", "contact_info")
 tree_customer.column("#0", width=0, stretch=tk.NO)
 tree_customer.column("id", anchor=tk.E, width=60)
-tree_customer.column("surname", anchor=tk.W, width=140)
+tree_customer.column("surname", anchor=tk.CENTER, width=140)
 tree_customer.column("contact_info", anchor=tk.W, width=200)
 tree_customer.heading("#0", text="", anchor=tk.W)
 tree_customer.heading("id", text="Kunde ID", anchor=tk.CENTER)
@@ -106,7 +118,7 @@ entry_customer_contact.grid(row=1, column=2, padx=padx, pady=pady)
 button_frame_customer = tk.Frame(controls_frame_customer)
 button_frame_customer.grid(row=1, column=0, padx=padx, pady=pady)
 
-button_create_customer = tk.Button(button_frame_customer, text="Opret Ny")
+button_create_customer = tk.Button(button_frame_customer, text="Opret Ny", command=lambda: create_customer(tree_customer, read_customer_entries()))
 button_create_customer.grid(row=0, column=0, padx=padx, pady=pady)
 button_update_customer = tk.Button(button_frame_customer, text="Opdater")
 button_update_customer.grid(row=0, column=1, padx=padx, pady=pady)
