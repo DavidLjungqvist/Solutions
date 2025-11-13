@@ -42,15 +42,29 @@ def create_customer(tree, record):
     clear_customer_entries()
     refresh_treeview(tree, pbd.Customer)
 
+def update_customer(tree, record):
+    customer = pbd.Customer.convert_from_tuple(record)
+    pbsql.update_customer(customer)
+    clear_customer_entries()
+    refresh_treeview(tree, pbd.Customer)
+
+def delete_customer(tree, record):
+    customer = pbd.Customer.convert_from_tuple(record)
+    pbsql.delete_soft_customer(customer)
+    clear_customer_entries()
+    refresh_treeview(tree, pbd.Customer)
+
+
 def read_table(tree, class_):
     count = 0
     result = pbsql.select_all(class_)
     for record in result:
-        if count % 2 == 0:
-            tree.insert(parent='', index='end', iid=str(count), text='', values=record.convert_to_tuple(), tags=('evenrow',))
-        else:
-            tree.insert(parent='', index='end', iid=str(count), text='', values=record.convert_to_tuple(), tags=('oddrow',))
-        count += 1
+        if record.valid():
+            if count % 2 == 0:
+                tree.insert(parent='', index='end', iid=str(count), text='', values=record.convert_to_tuple(), tags=('evenrow',))
+            else:
+                tree.insert(parent='', index='end', iid=str(count), text='', values=record.convert_to_tuple(), tags=('oddrow',))
+            count += 1
 
 def refresh_treeview(tree, class_):
     empty_treeview(tree)
@@ -120,9 +134,9 @@ button_frame_customer.grid(row=1, column=0, padx=padx, pady=pady)
 
 button_create_customer = tk.Button(button_frame_customer, text="Opret Ny", command=lambda: create_customer(tree_customer, read_customer_entries()))
 button_create_customer.grid(row=0, column=0, padx=padx, pady=pady)
-button_update_customer = tk.Button(button_frame_customer, text="Opdater")
+button_update_customer = tk.Button(button_frame_customer, text="Opdater", command=lambda: update_customer(tree_customer, read_customer_entries()))
 button_update_customer.grid(row=0, column=1, padx=padx, pady=pady)
-button_delete_customer = tk.Button(button_frame_customer, text="Slet")
+button_delete_customer = tk.Button(button_frame_customer, text="Slet", command=lambda: delete_customer(tree_customer, read_customer_entries()))
 button_delete_customer.grid(row=0, column=2, padx=padx, pady=pady)
 button_clear_boxes = tk.Button(button_frame_customer, text="Ryd Felter", command=clear_customer_entries)
 button_clear_boxes.grid(row=0, column=3, padx=padx, pady=pady)

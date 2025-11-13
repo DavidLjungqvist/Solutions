@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from sqlalchemy import create_engine, select
+from sqlalchemy import create_engine, select, update, delete
 
 from plusbus_data import Customer, Base
 
@@ -19,7 +19,7 @@ def create_test_data():
 
 def select_all(classparam):
     with Session(engine) as session:
-        records = session.scalars(select(classparam))
+        records = session.scalars(select(classparam)) # list of objects??
         result = []
         for record in records:
             result.append(record)
@@ -30,6 +30,17 @@ def create_record(record):
         record.id = None
         session.add(record)
         session.commit()
+
+def update_customer(customer):
+    with Session(engine) as session:
+        session.execute(update(Customer).where(Customer.id == customer.id).values(surname=customer.surname, contact_info=customer.contact_info))
+        session.commit()
+
+def delete_soft_customer(customer):
+    with Session(engine) as session:
+        session.execute(update(Customer).where(Customer.id == customer.id).values(surname="", contact_info=customer.contact_info))
+        session.commit()
+
 
 if __name__ == "__main__":
     engine = create_engine(Database, echo=False, future=True)

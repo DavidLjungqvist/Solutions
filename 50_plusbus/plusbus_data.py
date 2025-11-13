@@ -14,6 +14,13 @@ class Customer(Base):
     def convert_to_tuple(self):
         return self.id, self.surname, self.contact_info
 
+    def valid(self):
+        try:
+            value = len(self.surname)
+        except ValueError:
+            return False
+        return value
+
     @staticmethod
     def convert_from_tuple(tuple_):
         customer = Customer(id=tuple_[0], surname=tuple_[1], contact_info=tuple_[2])
