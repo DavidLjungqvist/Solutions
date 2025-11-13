@@ -19,7 +19,7 @@ class Customer(Base):
             value = len(self.surname)
         except ValueError:
             return False
-        return value
+        return value > 0
 
     @staticmethod
     def convert_from_tuple(tuple_):
