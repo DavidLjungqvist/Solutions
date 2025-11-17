@@ -26,7 +26,7 @@ def select_all(classparam):
 def create_record(record):
     with Session(engine) as session:
         if not record.id:
-            record.id = None  #  sqlalchemy decides ID
+            record.id = None  # sqlalchemy decides ID
         session.add(record)
         session.commit()
 
@@ -53,7 +53,7 @@ def delete_soft_travel(travel):
 if __name__ == "__main__":
     engine = create_engine(Database, echo=False, future=True)
     Base.metadata.create_all(engine)
-    create_test_data()
+    # create_test_data()
 else:
     engine = create_engine(Database, echo=False, future=True)
     Base.metadata.create_all(engine)

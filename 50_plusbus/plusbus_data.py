@@ -48,9 +48,9 @@ class Travel(Base):
         travel = Travel(id=tuple_[0], route=tuple_[1], date=tuple_[2], capacity=tuple_[3])
         return travel
 
-class Bookings(Base):
+class Booking(Base):
     __tablename__ = "Bookinger"
     id = Column(Integer, primary_key=True)
-    customer_id = Column(Integer, ForeignKey("customer.id"), nullable=False)
-    travel_id = Column(Integer, ForeignKey("travel.id"), nullable=False)
-    reserved_seats = Column(Integer)
+#     customer_id = Column(Integer, ForeignKey("customer.id"), nullable=False)
+#     travel_id = Column(Integer, ForeignKey("travel.id"), nullable=False)
+#     reserved_seats = Column(Integer)
