@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 from sqlalchemy import create_engine, select, update, delete
 
-from plusbus_data import Customer, Base
+from plusbus_data import Customer, Travel, Base
 
 Database = 'sqlite:///plusbus.db'
 
@@ -9,11 +9,9 @@ Database = 'sqlite:///plusbus.db'
 def create_test_data():
     with Session(engine) as session:
         new_items = []
-        new_items.append(Customer(surname="Name1", contact_info="name1@mailadress.com"))
-        new_items.append(Customer(surname="Name2", contact_info="name2@mailadress.com"))
-        new_items.append(Customer(surname="Name3", contact_info="name3@mailadress.com"))
-        new_items.append(Customer(surname="Name4", contact_info="name4@mailadress.com"))
-        new_items.append(Customer(surname="Name5", contact_info="name5@mailadress.com"))
+        new_items.append(Customer(date="01/10/2020", capacity="5", route="Viborg - Aarhus"))
+        new_items.append(Customer(date="01/10/2020", capacity="5", route="Viborg - Aarhus"))
+        new_items.append(Customer(date="01/10/2020", capacity="5", route="Viborg - Aarhus"))
         session.add_all(new_items)
         session.commit()
 
@@ -27,7 +25,8 @@ def select_all(classparam):
 
 def create_record(record):
     with Session(engine) as session:
-        record.id = None
+        if not record.id:
+            record.id = None  #  sqlalchemy decides ID
         session.add(record)
         session.commit()
 
@@ -41,10 +40,20 @@ def delete_soft_customer(customer):
         session.execute(update(Customer).where(Customer.id == customer.id).values(surname="", contact_info=customer.contact_info))
         session.commit()
 
+def update_travel(travel):
+    with Session(engine) as session:
+        session.execute(update(Travel).where(Travel.id == travel.id).values(route=travel.route, date=travel.date, capacity=travel.capacity))
+        session.commit()
+
+def delete_soft_travel(travel):
+    with Session(engine) as session:
+        session.execute(update(Travel).where(Travel.id == travel.id).values(route="", date=travel.date, capacity=travel.capacity))
+
 
 if __name__ == "__main__":
     engine = create_engine(Database, echo=False, future=True)
     Base.metadata.create_all(engine)
+    create_test_data()
 else:
     engine = create_engine(Database, echo=False, future=True)
     Base.metadata.create_all(engine)

@@ -17,7 +17,7 @@ treeview_selected = "#206030"
 oddrow = "#dddddd"
 evenrow = "#cccccc"
 
-
+#  region customer functions
 def read_customer_entries():
     return entry_customer_id.get(), entry_customer_surname.get(), entry_customer_contact.get(),
 
@@ -54,8 +54,47 @@ def delete_customer(tree, record):
     pbsql.delete_soft_customer(customer)
     clear_customer_entries()
     refresh_treeview(tree, pbd.Customer)
+#  endregion customer functions
+#  region travel functions
+def read_travel_entries():
+    return entry_travel_id.get(), entry_travel_route.get(), entry_travel_date.get(), entry_travel_capacity.get(),
 
+def clear_travel_entries():
+    entry_travel_id.delete(0, tk.END)
+    entry_travel_route.delete(0, tk.END)
+    entry_travel_date.delete(0, tk.END)
+    entry_travel_capacity.delete(0, tk.END)
 
+def write_travel_entries(values):
+    entry_travel_id.insert(0, values[0])
+    entry_travel_route.insert(0, values[1])
+    entry_travel_date.insert(0, values[2])
+    entry_travel_capacity.insert(0, values[3])
+
+def edit_travel(_, tree):
+    index_selected = tree.focus()
+    values = tree.item(index_selected, 'values')
+    clear_travel_entries()
+    write_travel_entries(values)
+
+def create_travel(tree, record):
+    travel = pbd.Travel.convert_from_tuple(record)
+    pbsql.create_record(travel)
+    clear_travel_entries()
+    refresh_treeview(tree, pbd.Travel)
+
+def update_travel(tree, record):
+    travel = pbd.Travel.convert_from_tuple(record)
+    pbsql.update_travel(travel)
+    clear_travel_entries()
+    refresh_treeview(tree, pbd.Travel)
+
+def delete_travel(tree, record):
+    travel = pbd.Travel.convert_from_tuple(record)
+    pbsql.delete_soft_travel(travel)
+    clear_travel_entries()
+    refresh_treeview(tree, pbd.Travel)
+#  endregion travel functions
 def read_table(tree, class_):
     count = 0
     result = pbsql.select_all(class_)
@@ -166,8 +205,7 @@ tree_travel.heading("date", text="Dato", anchor=tk.CENTER)
 tree_travel.heading("capacity", text="Pladser", anchor=tk.CENTER)
 tree_travel.tag_configure('oddrow', background=oddrow)
 tree_travel.tag_configure('evenrow', background=evenrow)
-
-# tree_travel.bind("<ButtonRelease1>", lambda event: edit_routes(event, tree_travel))
+tree_travel.bind("<ButtonRelease-1>", lambda event: edit_travel(event, tree_travel))
 
 
 controls_frame_travel = tk.Frame(frame_travel)
@@ -181,33 +219,34 @@ label_travel_id.grid(row=0, column=0, padx=padx, pady=pady)
 entry_travel_id = tk.Entry(edit_frame_travel, width=4, justify="right")
 entry_travel_id.grid(row=1, column=0, padx=padx, pady=pady)
 
+label_travel_route = tk.Label(edit_frame_travel, text="Rute")
+label_travel_route.grid(row=0, column=1, padx=padx, pady=pady)
+entry_travel_route = tk.Entry(edit_frame_travel, width=24, justify="right")
+entry_travel_route.grid(row=1, column=1, padx=padx, pady=pady)
+
 label_travel_date = tk.Label(edit_frame_travel, text="Dato")
-label_travel_date.grid(row=0, column=1, padx=padx, pady=pady)
+label_travel_date.grid(row=0, column=2, padx=padx, pady=pady)
 entry_travel_date = tk.Entry(edit_frame_travel, width=12, justify="right")
-entry_travel_date.grid(row=1, column=1, padx=padx, pady=pady)
+entry_travel_date.grid(row=1, column=2, padx=padx, pady=pady)
 
 label_travel_capacity = tk.Label(edit_frame_travel, text="Pladser")
-label_travel_capacity.grid(row=0, column=2, padx=padx, pady=pady)
+label_travel_capacity.grid(row=0, column=3, padx=padx, pady=pady)
 entry_travel_capacity = tk.Entry(edit_frame_travel, width=4, justify="right")
-entry_travel_capacity.grid(row=1, column=2, padx=padx, pady=pady)
-
-label_travel_route_route = tk.Label(edit_frame_travel, text="Rute")
-label_travel_route_route.grid(row=0, column=3, padx=padx, pady=pady)
-entry_travel_route_route = tk.Entry(edit_frame_travel, width=24, justify="right")
-entry_travel_route_route.grid(row=1, column=3, padx=padx, pady=pady)
+entry_travel_capacity.grid(row=1, column=3, padx=padx, pady=pady)
 
 button_frame_travel = tk.Label(controls_frame_travel)
 button_frame_travel.grid(row=1, column=0, padx=padx, pady=pady)
 
-button_create_travel = tk.Button(button_frame_travel, text="Opret Ny", command=lambda: create_travel(tree_customer, read_travel_entries()))
+button_create_travel = tk.Button(button_frame_travel, text="Opret Ny", command=lambda: create_travel(tree_travel, read_travel_entries()))
 button_create_travel.grid(row=0, column=0, padx=padx, pady=pady)
-button_update_travel = tk.Button(button_frame_travel, text="Opdater", command=lambda: update_travel(tree_customer, read_travel_entries()))
+button_update_travel = tk.Button(button_frame_travel, text="Opdater", command=lambda: update_travel(tree_travel, read_travel_entries()))
 button_update_travel.grid(row=0, column=1, padx=padx, pady=pady)
-button_delete_travel = tk.Button(button_frame_travel, text="Slet", command=lambda: delete_travel(tree_customer, read_travel_entries()))
+button_delete_travel = tk.Button(button_frame_travel, text="Slet", command=lambda : delete_travel(tree_travel, read_travel_entries()))
 button_delete_travel.grid(row=0, column=2, padx=padx, pady=pady)
 button_clear_boxes = tk.Button(button_frame_travel, text="Ryd Felter", command=clear_travel_entries)
 button_clear_boxes.grid(row=0, column=3, padx=padx, pady=pady)
 
 if __name__ == "__main__":
     refresh_treeview(tree_customer, pbd.Customer)
+    refresh_treeview(tree_travel, pbd.Travel)
     main_window.mainloop()
