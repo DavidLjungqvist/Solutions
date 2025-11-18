@@ -93,7 +93,33 @@ def delete_travel(tree, record):
 #  endregion travel functions
 #  region booking functions
 def read_booking_entries():
-    return
+    return entry_booking_booking_id.get(), entry_booking_customer_id.get(), entry_booking_travel_id.get(), entry_booking_reserved_seats.get(),
+
+def clear_booking_entries():
+    entry_booking_booking_id.delete(0, tk.END)
+    entry_booking_customer_id.delete(0, tk.END)
+    entry_booking_travel_id.delete(0, tk.END)
+    entry_booking_reserved_seats.delete(0, tk.END)
+
+def write_booking_entries(values):
+    entry_booking_booking_id.insert(0, values[0])
+    entry_booking_customer_id.insert(0, values[1])
+    entry_booking_travel_id.insert(0, values[2])
+    entry_booking_reserved_seats.insert(0, values[3])
+
+def edit_booking(_, tree):
+    index_selected = tree.focus()
+    values = tree.item(index_selected, 'values')
+    clear_booking_entries()
+    write_booking_entries(values)
+
+# def create_booking(tree, record):
+#     booking = pbd.Booking.convert_from_tuple(record)
+#     capacity_available = dcf.
+#     pbsql.create_record(booking)
+#     clear_booking_entries()
+#     refresh_treeview(tree, pbd.Booking)
+
 
 def read_table(tree, class_):
     count = 0
@@ -263,10 +289,10 @@ tree_scroll_booking.config(command=tree_booking.yview)
 
 tree_booking['column'] = ("id", "customer_id", "travel_id", "reserved_seats")
 tree_booking.column("#0", width=0, stretch=tk.NO)
-tree_booking.column("id", anchor=tk.E, width=40)
-tree_booking.column("customer_id", anchor=tk.E, width=80)
-tree_booking.column("travel_id", anchor=tk.E, width=80)
-tree_booking.column("reserved_seats", anchor=tk.E, width=100)
+tree_booking.column("id", anchor=tk.E, width=90)
+tree_booking.column("customer_id", anchor=tk.E, width=90)
+tree_booking.column("travel_id", anchor=tk.E, width=90)
+tree_booking.column("reserved_seats", anchor=tk.E, width=110)
 tree_booking.heading("#0", text="", anchor=tk.W)
 tree_booking.heading("id", text="Booking ID", anchor=tk.CENTER)
 tree_booking.heading("customer_id", text="Kunde ID", anchor=tk.CENTER)
@@ -302,7 +328,8 @@ entry_booking_reserved_seats.grid(row=1, column=3, padx=padx, pady=pady)
 button_frame_booking = tk.Frame(controls_frame_booking)
 button_frame_booking.grid(row=1, column=0, padx=padx, pady=pady)
 
-button_create_booking = tk.Button(button_frame_booking, text="Opret Ny")
+button_create_booking = tk.Button(button_frame_booking, text="Opret Ny"#, command=lambda: create_booking(tree_booking, read_booking_entries()))
+                                  )
 button_create_booking.grid(row=0, column=0, padx=padx, pady=pady)
 button_update_booking = tk.Button(button_frame_booking, text="Opdater")
 button_update_booking.grid(row=0, column=1, padx=padx, pady=pady)

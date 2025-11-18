@@ -23,6 +23,11 @@ def select_all(classparam):
             result.append(record)
     return result
 
+def get_record(classparam, record_id):
+    with Session(engine) as session:
+        record = session.scalars(select(classparam).where(classparam.id == record_id)).first()
+    return record
+
 def create_record(record):
     with Session(engine) as session:
         if not record.id:

@@ -1,6 +1,7 @@
 from sqlalchemy.orm import declarative_base
 from sqlalchemy import Column, ForeignKey
 from sqlalchemy import String, Integer
+from dateutil import parser
 
 Base = declarative_base()
 
@@ -45,12 +46,25 @@ class Travel(Base):
 
     @staticmethod
     def convert_from_tuple(tuple_):
-        travel = Travel(id=tuple_[0], route=tuple_[1], date=tuple_[2], capacity=tuple_[3])
+        date = parser.parse(tuple_[2])
+        travel = Travel(id=tuple_[0], route=tuple_[1], date=date, capacity=tuple_[3])
         return travel
 
 class Booking(Base):
     __tablename__ = "Bookinger"
     id = Column(Integer, primary_key=True)
-#     customer_id = Column(Integer, ForeignKey("customer.id"), nullable=False)
-#     travel_id = Column(Integer, ForeignKey("travel.id"), nullable=False)
-#     reserved_seats = Column(Integer)
+    customer_id = Column(Integer#, ForeignKey("customer.id"), nullable=False)
+    )
+    travel_id = Column(Integer#, ForeignKey("travel.id"), nullable=False)
+    )
+    reserved_seats = Column(Integer)
+
+    def convert_to_tuple(self):
+        return self.id, self.customer_id, self.travel_id, self.reserved_seats
+
+
+
+    @staticmethod
+    def convert_from_tuple(tuple_):
+        booking = Booking(id=tuple_[0], customer_id=tuple[1], travel_id=tuple_[2], reserved_seats=tuple_[3])
+        return booking
