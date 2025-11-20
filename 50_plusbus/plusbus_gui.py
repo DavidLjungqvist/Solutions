@@ -116,10 +116,13 @@ def edit_booking(_, tree):
 
 def create_booking(tree, record):
     booking = pbd.Booking.convert_from_tuple(record)
-    capacity_available = pbf.capacity_available(pbsql.get_record(pbd.Booking, booking.travel_id), booking.reserved_seats)
-    pbsql.create_record(booking)
-    clear_booking_entries()
-    refresh_treeview(tree, pbd.Booking)
+    capacity_available = pbf.capacity_available(booking, pbsql.get_record(pbd.Travel, booking.travel_id))
+    if capacity_available:
+        pbsql.create_record(booking)
+        clear_booking_entries()
+        refresh_treeview(tree, pbd.Booking)
+    else:
+        print("not enough space available")
 
 
 def read_table(tree, class_):
@@ -139,6 +142,12 @@ def refresh_treeview(tree, class_):
 
 def empty_treeview(tree):
     tree.delete(*tree.get_children())
+
+
+#hardcode 1st line in Bookinger
+
+# exit(123)
+
 
 #  region common widgets
 main_window = tk.Tk()
@@ -343,4 +352,5 @@ button_clear_boxes.grid(row=0, column=3, padx=padx, pady=pady)
 if __name__ == "__main__":
     refresh_treeview(tree_customer, pbd.Customer)
     refresh_treeview(tree_travel, pbd.Travel)
+    refresh_treeview(tree_booking, pbd.Booking)
     main_window.mainloop()

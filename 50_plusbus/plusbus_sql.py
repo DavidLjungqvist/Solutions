@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 from sqlalchemy import create_engine, select, update, delete
-
-from plusbus_data import Customer, Travel, Base
+from datetime import date
+from plusbus_data import Customer, Travel, Booking, Base
 
 Database = 'sqlite:///plusbus.db'
 
@@ -9,9 +9,14 @@ Database = 'sqlite:///plusbus.db'
 def create_test_data():
     with Session(engine) as session:
         new_items = []
-        new_items.append(Customer(date="01/10/2020", capacity="5", route="Viborg - Aarhus"))
-        new_items.append(Customer(date="01/10/2020", capacity="5", route="Viborg - Aarhus"))
-        new_items.append(Customer(date="01/10/2020", capacity="5", route="Viborg - Aarhus"))
+        new_items.append(Booking(customer_id=3, travel_id=4, reserved_seats=2))
+        new_items.append(Customer(surname="Johnson", contact_info="johson@gmail.com"))
+        new_items.append(Customer(surname="Carlson", contact_info="cson@gmail.com"))
+        new_items.append(Customer(surname="Jefferson", contact_info="jefson@gmail.com"))
+        new_items.append(Travel(route="København - Roskilde", date=date(2020, 1 ,10), capacity=20))
+        new_items.append(Travel(route="København - Helsingør", date=date(2020, 2, 10), capacity=20))
+        new_items.append(Travel(route="København - Slagelse", date=date(2020, 3, 10), capacity=20))
+        new_items.append(Travel(route="København - Køge", date=date(2020, 4, 10), capacity=20))
         session.add_all(new_items)
         session.commit()
 

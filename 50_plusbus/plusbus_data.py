@@ -7,7 +7,7 @@ Base = declarative_base()
 
 
 class Customer(Base):
-    __tablename__ = "Kunder"
+    __tablename__ = "Customer"
     id = Column(Integer, primary_key=True)
     surname = Column(String)
     contact_info = Column(String)
@@ -27,8 +27,9 @@ class Customer(Base):
         customer = Customer(id=tuple_[0], surname=tuple_[1], contact_info=tuple_[2])
         return customer
 
+
 class Travel(Base):
-    __tablename__ = "Rejser"
+    __tablename__ = "Travel"
     id = Column(Integer, primary_key=True)
     route = Column(String)
     date = Column(Date)
@@ -50,19 +51,21 @@ class Travel(Base):
         travel = Travel(id=tuple_[0], route=tuple_[1], date=date, capacity=tuple_[3])
         return travel
 
+
 class Booking(Base):
-    __tablename__ = "Bookinger"
+    __tablename__ = "Booking"
     id = Column(Integer, primary_key=True)
-    customer_id = Column(Integer#, ForeignKey("customer.id"), nullable=False)
-    )
-    travel_id = Column(Integer#, ForeignKey("travel.id"), nullable=False)
-    )
+    customer_id = Column(Integer  #, ForeignKey("customer.id"), nullable=False)
+                         )
+    travel_id = Column(Integer  #, ForeignKey("travel.id"), nullable=False)
+                       )
     reserved_seats = Column(Integer)
 
     def convert_to_tuple(self):
         return self.id, self.customer_id, self.travel_id, self.reserved_seats
 
-
+    def valid(self):
+        return True
 
     @staticmethod
     def convert_from_tuple(tuple_):
