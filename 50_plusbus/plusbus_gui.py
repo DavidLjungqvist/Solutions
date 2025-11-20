@@ -124,6 +124,21 @@ def create_booking(tree, record):
     else:
         print("not enough space available")
 
+def update_booking(tree, record):  # Will be wrong if you try to update because it will try to count itself on the datebase
+    booking = pbd.Booking.convert_from_tuple(record)
+    capacity_available = pbf.capacity_available(booking, pbsql.get_record(pbd.Travel, booking.travel_id))
+    if capacity_available:
+        pbsql.update_booking(booking)
+        clear_booking_entries()
+        refresh_treeview(tree, pbd.Booking)
+    else:
+        print("not enough space available")
+
+def delete_booking(tree, record):
+    booking = pbd.Booking.convert_from_tuple(record)
+    pbsql.delete_hard_booking(booking)
+    clear_booking_entries()
+    refresh_treeview(tree, pbd.Booking)
 
 def read_table(tree, class_):
     count = 0
@@ -308,6 +323,7 @@ tree_booking.heading("id", text="Booking ID", anchor=tk.CENTER)
 tree_booking.heading("customer_id", text="Kunde ID", anchor=tk.CENTER)
 tree_booking.heading("travel_id", text="Rejse ID", anchor=tk.CENTER)
 tree_booking.heading("reserved_seats", text="Reserveret pladser", anchor=tk.CENTER)
+tree_booking.bind("<ButtonRelease-1>", lambda event: edit_booking(event, tree_booking))
 
 controls_frame_booking = tk.Frame(frame_booking)
 controls_frame_booking.grid(row=1, column=0, padx=padx, pady=pady)
@@ -341,11 +357,11 @@ button_frame_booking.grid(row=1, column=0, padx=padx, pady=pady)
 
 button_create_booking = tk.Button(button_frame_booking, text="Opret Ny", command=lambda: create_booking(tree_booking, read_booking_entries()))
 button_create_booking.grid(row=0, column=0, padx=padx, pady=pady)
-button_update_booking = tk.Button(button_frame_booking, text="Opdater")
+button_update_booking = tk.Button(button_frame_booking, text="Opdater", command=lambda: update_booking(tree_booking, read_booking_entries()))
 button_update_booking.grid(row=0, column=1, padx=padx, pady=pady)
-button_delete_booking = tk.Button(button_frame_booking, text="Slet")
+button_delete_booking = tk.Button(button_frame_booking, text="Slet", command=lambda: delete_booking(tree_booking, read_booking_entries()))
 button_delete_booking.grid(row=0, column=2, padx=padx, pady=pady)
-button_clear_boxes = tk.Button(button_frame_booking, text="Ryd Felter")
+button_clear_boxes = tk.Button(button_frame_booking, text="Ryd Felter", command=clear_booking_entries)
 button_clear_boxes.grid(row=0, column=3, padx=padx, pady=pady)
 
 

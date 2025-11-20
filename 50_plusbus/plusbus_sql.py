@@ -59,6 +59,15 @@ def delete_soft_travel(travel):
     with Session(engine) as session:
         session.execute(update(Travel).where(Travel.id == travel.id).values(route="", date=travel.date, capacity=travel.capacity))
 
+def update_booking(booking):
+    with Session(engine) as session:
+        session.execute(update(Booking).where(Booking.id == booking.id).values(customer_id=booking.customer_id, travel_id=booking.travel_id, reserved_seats=booking.reserved_seats))
+        session.commit()
+
+def delete_hard_booking(booking):
+    with Session(engine) as session:
+        session.execute(delete(Booking).where(Booking.id == booking.id))
+        session.commit()
 
 if __name__ == "__main__":
     engine = create_engine(Database, echo=False, future=True)
