@@ -1,5 +1,5 @@
 from sqlalchemy.orm import declarative_base
-from sqlalchemy import Column, ForeignKey
+from sqlalchemy import Column, ForeignKey, Date
 from sqlalchemy import String, Integer
 from dateutil import parser
 
@@ -31,7 +31,7 @@ class Travel(Base):
     __tablename__ = "Rejser"
     id = Column(Integer, primary_key=True)
     route = Column(String)
-    date = Column(String)
+    date = Column(Date)
     capacity = Column(Integer)
 
     def convert_to_tuple(self):
@@ -66,5 +66,5 @@ class Booking(Base):
 
     @staticmethod
     def convert_from_tuple(tuple_):
-        booking = Booking(id=tuple_[0], customer_id=tuple[1], travel_id=tuple_[2], reserved_seats=tuple_[3])
+        booking = Booking(id=tuple_[0], customer_id=tuple_[1], travel_id=tuple_[2], reserved_seats=tuple_[3])
         return booking

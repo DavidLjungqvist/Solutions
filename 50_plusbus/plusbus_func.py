@@ -5,10 +5,14 @@ from sqlalchemy import extract
 import plusbus_data as pbd
 import plusbus_sql as pbsql
 
-def capacity_available(travel_id, new_booking):
+def booked_seats(booking):
     with Session(pbsql.engine) as session:
-        records = session.scalars(select(pbd.Booking).where(pbd.Booking.travel_id == travel_id))
+        records = session.scalars(select(pbd.Booking).where(pbd.Booking.travel_id == booking.travel_id))
         reserved_seats = 0
-        for record in records
-            reserved_seats += pbsql.get_record(pbd.Customer, record.customer_id).weight
-        return booking.
+        for record in records:
+            reserved_seats += pbsql.get_record(pbd.Travel, record.travel_id).reserved_seats
+    return reserved_seats
+
+def capacity_available(booking, new_booked_seats):
+    booked = booked_seats(booking)
+    return travel.capacity > booked + new_booked_seats

@@ -3,6 +3,7 @@ import tkinter as tk
 from tkinter import ttk
 import plusbus_data as pbd
 import plusbus_sql as pbsql
+import plusbus_func as pbf
 
 padx = 8
 pady = 4
@@ -113,12 +114,12 @@ def edit_booking(_, tree):
     clear_booking_entries()
     write_booking_entries(values)
 
-# def create_booking(tree, record):
-#     booking = pbd.Booking.convert_from_tuple(record)
-#     capacity_available = dcf.
-#     pbsql.create_record(booking)
-#     clear_booking_entries()
-#     refresh_treeview(tree, pbd.Booking)
+def create_booking(tree, record):
+    booking = pbd.Booking.convert_from_tuple(record)
+    capacity_available = pbf.capacity_available(pbsql.get_record(pbd.Booking, booking.travel_id), booking.reserved_seats)
+    pbsql.create_record(booking)
+    clear_booking_entries()
+    refresh_treeview(tree, pbd.Booking)
 
 
 def read_table(tree, class_):
@@ -328,8 +329,8 @@ entry_booking_reserved_seats.grid(row=1, column=3, padx=padx, pady=pady)
 button_frame_booking = tk.Frame(controls_frame_booking)
 button_frame_booking.grid(row=1, column=0, padx=padx, pady=pady)
 
-button_create_booking = tk.Button(button_frame_booking, text="Opret Ny"#, command=lambda: create_booking(tree_booking, read_booking_entries()))
-                                  )
+
+button_create_booking = tk.Button(button_frame_booking, text="Opret Ny", command=lambda: create_booking(tree_booking, read_booking_entries()))
 button_create_booking.grid(row=0, column=0, padx=padx, pady=pady)
 button_update_booking = tk.Button(button_frame_booking, text="Opdater")
 button_update_booking.grid(row=0, column=1, padx=padx, pady=pady)
