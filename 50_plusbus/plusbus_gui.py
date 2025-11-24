@@ -301,7 +301,7 @@ button_clear_boxes = tk.Button(button_frame_travel, text="Ryd Felter", command=c
 button_clear_boxes.grid(row=0, column=3, padx=padx, pady=pady)
 #  endregion travel widgets
 #  region booking widgets
-frame_booking = tk.LabelFrame(main_window, text="Bookninger")
+frame_booking = tk.LabelFrame(main_window, text="Bookinger")
 frame_booking.grid(row=0, column=2, padx=padx, pady=pady, sticky=tk.N)
 
 tree_frame_booking = tk.Frame(frame_booking)
