@@ -3,8 +3,16 @@ from sqlalchemy import create_engine, select, update, delete
 from datetime import date
 from plusbus_data import Customer, Travel, Booking, Base
 
-Database = 'sqlite:///plusbus.db'
+from sqlalchemy.engine import Engine
+from sqlalchemy import event
 
+@event.listens_for(Engine, "connect")
+def set_sqlite_pragma(dbapi_connection, connection_record):
+    cursor = dbapi_connection.cursor()
+    cursor.execute("PRAGMA foreign_keys=ON")
+    cursor.close()
+
+Database = 'sqlite:///plusbus.db'
 
 def create_test_data():
     with Session(engine) as session:

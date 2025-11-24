@@ -55,10 +55,9 @@ class Travel(Base):
 class Booking(Base):
     __tablename__ = "Booking"
     id = Column(Integer, primary_key=True)
-    customer_id = Column(Integer  #, ForeignKey("customer.id"), nullable=False)
-                         )
-    travel_id = Column(Integer  #, ForeignKey("travel.id"), nullable=False)
-                       )
+    customer_id = Column(Integer, ForeignKey("Customer.id"), nullable=False)
+
+    travel_id = Column(Integer, ForeignKey("Travel.id"), nullable=False)
     reserved_seats = Column(Integer)
 
     def convert_to_tuple(self):

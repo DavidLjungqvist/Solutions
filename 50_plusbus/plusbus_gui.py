@@ -124,7 +124,7 @@ def create_booking(tree, record):
     else:
         print("not enough space available")
 
-def update_booking(tree, record):  # Will be wrong if you try to update because it will try to count itself on the datebase
+def update_booking(tree, record):  # Will be wrong if you try to update because it will try to count reserved spots of itself on the datebase
     booking = pbd.Booking.convert_from_tuple(record)
     capacity_available = pbf.capacity_available(booking, pbsql.get_record(pbd.Travel, booking.travel_id))
     if capacity_available:
@@ -323,6 +323,8 @@ tree_booking.heading("id", text="Booking ID", anchor=tk.CENTER)
 tree_booking.heading("customer_id", text="Kunde ID", anchor=tk.CENTER)
 tree_booking.heading("travel_id", text="Rejse ID", anchor=tk.CENTER)
 tree_booking.heading("reserved_seats", text="Reserveret pladser", anchor=tk.CENTER)
+tree_booking.tag_configure('oddrow', background=oddrow)
+tree_booking.tag_configure('evenrow', background=evenrow)
 tree_booking.bind("<ButtonRelease-1>", lambda event: edit_booking(event, tree_booking))
 
 controls_frame_booking = tk.Frame(frame_booking)
