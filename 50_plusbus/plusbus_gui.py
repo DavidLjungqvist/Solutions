@@ -13,6 +13,7 @@ treeview_foreground = "black"
 treeview_selected = "#206030"
 oddrow = "#dddddd"
 evenrow = "#cccccc"
+INTERNAL_ERROR_CODE = 0
 
 #  region customer functions
 def read_customer_entries():
@@ -122,6 +123,8 @@ def create_booking(tree, record):
         clear_booking_entries()
         refresh_treeview(tree, pbd.Booking)
     else:
+        global INTERNAL_ERROR_CODE
+        INTERNAL_ERROR_CODE = 1
         print("not enough space available")
 
 def update_booking(tree, record):  # Will be wrong if you try to update because it will try to count reserved spots of itself on the datebase

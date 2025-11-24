@@ -36,6 +36,15 @@ def select_all(classparam):
             result.append(record)
     return result
 
+def max_id(classparam):
+    with Session(engine) as session:
+        records = session.scalars(select(classparam))
+        maximum = 0
+        for record in records:
+            if record.id > maximum:
+                maximum = record.id
+    return maximum
+
 def get_record(classparam, record_id):
     with Session(engine) as session:
         record = session.scalars(select(classparam).where(classparam.id == record_id)).first()

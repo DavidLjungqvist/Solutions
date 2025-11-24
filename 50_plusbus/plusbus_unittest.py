@@ -27,20 +27,19 @@ class TestEmptyEntries(unittest.TestCase):
 
     def test_empty_container_entries(self):
         # arrange
-        Database = 'sqlite:///danskcargo.db'  # first part: database type, second part: file path
+        Database = 'sqlite:///plusbus.db'  # first part: database type, second part: file path
         Base = declarative_base()  # creating the registry and declarative base classes - combined into one step. Base will serve as the base class for the ORM mapped classes we declare.
         engine = create_engine(Database, echo=False, future=True)  # https://docs.sqlalchemy.org/en/14/tutorial/engine.html   The start of any SQLAlchemy application is an object called the Engine. This object acts as a central source of connections to a particular database, providing both a factory as well as a holding space called a connection pool for these database connections. The engine is typically a global object created just once for a particular database server, and is configured using a URL string which will describe how it should connect to the database host or backend.
         Base.metadata.create_all(engine)
         with Session(engine) as session:
             new_items = []
-            new_items.append(pbd.Container(weight=1234, destination="Oslo"))  # add new container to database
-            new_items.append(pbd.Aircraft(max_cargo_weight=1000, registration="OY-THR"))  # add new aircraft to database
+            new_items.append(pbd.Customer(surname="Johnson", contact_info="Johnson@email.com"))  # add new container to database
+            new_items.append(pbd.Travel(route="København - Slagelse", date=date(2020, 10, 20), capacity=5))  # add new aircraft to database
             session.add_all(new_items)
             session.commit()
-        a_date = "8888-11-22"
-        record = ("", a_date, pbsql.max_id(pbd.Container), pbsql.max_id(pbd.Aircraft))  # create a tuple using the newly added container and aircraft (because they have been newly added, they each have the highest id in their table)
+        record = (None, pbsql.max_id(pbd.Customer), pbsql.max_id(pbd.Travel), 6)  # create a tuple using the newly added container and aircraft (because they have been newly added, they each have the highest id in their table)
         # act
-        pbg.create_transport(pbg.tree_transport, record)
+        pbg.create_booking(pbg.tree_booking, record)
         # assert
         self.assertEqual(pbg.INTERNAL_ERROR_CODE, 1)  # container weighs more than the aircraft's total capacity
 
