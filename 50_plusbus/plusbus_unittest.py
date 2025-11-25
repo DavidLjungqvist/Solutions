@@ -25,7 +25,7 @@ class TestStringMethods(unittest.TestCase):  # basic example from https://docs.p
 
 class TestEmptyEntries(unittest.TestCase):
 
-    def test_empty_container_entries(self):
+    def test_travel_capacity(self):
         # arrange
         Database = 'sqlite:///plusbus.db'  # first part: database type, second part: file path
         Base = declarative_base()  # creating the registry and declarative base classes - combined into one step. Base will serve as the base class for the ORM mapped classes we declare.
