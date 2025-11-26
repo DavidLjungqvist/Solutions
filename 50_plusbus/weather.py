@@ -61,11 +61,11 @@ def main(city, KEY):
 
     icon_img = get_weather_icon(icon_code)
 
-    label = tk.Label(root, image=icon_img, bg="#1e1e1e")
+    label = tk.Label(root, image=icon_img, bg="#0e0e0e")
     label.image = icon_img
     label.pack(pady=20)
 
     root.mainloop()
 
 if __name__ == "__main__":  # Executed when invoked directly
-   main("Helsinki", KEY)
+   main("los angeles", KEY)
