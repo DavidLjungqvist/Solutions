@@ -3,6 +3,8 @@ import requests
 import tkinter as tk
 from PIL import Image, ImageTk
 from io import BytesIO
+import json
+
 
 KEY = "2a3891ce1248786a1398a888debb0368"  # ulsc@aspit.dk
 
@@ -61,11 +63,20 @@ def main(city, KEY):
 
     icon_img = get_weather_icon(icon_code)
 
-    label = tk.Label(root, image=icon_img, bg="#1e1e1e")
+    label = tk.Label(root, image=icon_img, bg="#0e0e0e")
     label.image = icon_img
     label.pack(pady=20)
 
     root.mainloop()
 
+def json_func():
+    x = '{"name":"James", "age":29, "address":"Pineapple street", "favorite food":"Pizza"}'
+
+    y = json.loads(x)
+
+    print(y["address"])
+
+
 if __name__ == "__main__":  # Executed when invoked directly
-   main("Helsinki", KEY)
+   # main("Grand Rapids", KEY)
+    json_func()
