@@ -73,7 +73,6 @@ def json_func():
     x = '{"name":"James", "age":29, "address":"Pineapple street", "favorite food":"Pizza"}'
 
     y = json.loads(x)
-
     print(y["address"])
 
 
