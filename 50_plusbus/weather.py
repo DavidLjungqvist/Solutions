@@ -77,5 +77,5 @@ def json_func():
 
 
 if __name__ == "__main__":  # Executed when invoked directly
-   # main("Grand Rapids", KEY)
-    json_func()
+   main("Los angeles", KEY)
+   #  json_func()
