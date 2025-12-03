@@ -5,10 +5,8 @@ import pandas as pd
 import geopandas as gpd
 import matplotlib.pyplot as plt
 import contextily as ctx
-# from contextily import providers
 import fastparquet
 import pyarrow
-from Tools.scripts.generate_re_casefix import alpha
 
 # import datashader
 # import holoviews
@@ -23,8 +21,9 @@ end_time = now_iso
 # bbox=7,54,16,58&
 
 def lightning(key):
-    url = "https://dmigw.govcloud.dk/v2/lightningdata/collections/observation/items?datetime=" + start_time + "/" + end_time + "&limit=20&sortorder=observed,DESC&api-key=" + key
-    response = httpx.get(url)
+    url = "https://dmigw.govcloud.dk/v2/lightningdata/collections/observation/items?bbox=7,54,16,58&datetime=" + start_time + "/" + end_time + "&limit=10000&sortorder=observed,DESC&api-key=" + key
+    response = httpx.get(url, timeout=30.0)
+    print("Got Response")
     strikes_info = response.json()
     raw_strikes = strikes_info["features"]
     # time = []
@@ -43,10 +42,14 @@ def lightning(key):
 
     gdf = gpd.GeoDataFrame(df, geometry=gpd.points_from_xy(df.lon, df.lat), crs="EPSG:4326")
 
+    print(gdf.head())
+
     gdf.to_parquet("lightning_2025.parquet", index=False)
 
 
 # print(list(ctx.providers.Stamen))
+# print(ctx.__version__)
+# print(list(ctx.providers))
 
 def read_parquet_to_plot():
     gdf = gpd.read_parquet("lightning_2025.parquet")
@@ -65,12 +68,9 @@ def read_parquet_to_plot():
 
     fig, ax = plt.subplots(figsize=(10, 10))
 
-    gdf_web.plot(ax=ax, markersize=2, alpha=0.6, color="yellow")
+    gdf_web.plot(ax=ax, markersize=20, alpha=0.6, color="yellow")
 
-    ctx.add_basemap(ax, source=ctx.providers.OSM)
-    ctx.add_basemap(ax, source=ctx.providers.Stamen.TonerLite)
-    ctx.add_basemap(ax, source=ctx.providers.Stamen.TonerLite)
-
+    ctx.add_basemap(ax, source=ctx.providers.OpenStreetMap.Mapnik)
     plt.show()
 
     # gdf.plot(markersize=1, figsize=(10, 10))
@@ -87,5 +87,5 @@ def read_parquet_to_plot():
     #     print(f"Coordinates: {strike["geometry"]["coordinates"]}, Intensity: {abs(strike["properties"]["amp"])}, Time: {time[i]:%d.%m.%y  %H:%M:%S}")
 
 
-# lightning(lightning_api_key)
+lightning(lightning_api_key)
 read_parquet_to_plot()
