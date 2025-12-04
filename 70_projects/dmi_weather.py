@@ -12,17 +12,31 @@ import pyarrow
 # import holoviews
 
 lightning_api_key = "501d635d-81f9-42f9-a36a-00fc85bb2bce"
-now_dt = datetime.now(timezone.utc)
-now_iso = now_dt.isoformat().replace("+00:00", "Z")
 # print(now_iso)
-start_time = "2025-01-01T00:00:00Z"
-end_time = now_iso
+
+# end_of_year = input_year + "-12-31T23:59:59"
+# if end_of_year
+# end_time = now_iso
 
 # bbox=7,54,16,58&
 
-def lightning(key):
-    url = "https://dmigw.govcloud.dk/v2/lightningdata/collections/observation/items?bbox=7,54,16,58&datetime=" + start_time + "/" + end_time + "&limit=10000&sortorder=observed,DESC&api-key=" + key
+
+
+def lightning(key, year):
+    input_year = year
+    start_date = input_year + "-01-01T00:00:00Z"
+    now_dt = datetime.now(timezone.utc)
+    print(now_dt.year, input_year)
+    if str(now_dt.year) == str(input_year):
+        end_date = now_dt.isoformat().replace("+00:00", "Z")
+    else:
+        end_date = input_year + "-12-31T23:59:59Z"
+
+    print(start_date, end_date)
+
+    url = "https://dmigw.govcloud.dk/v2/lightningdata/collections/observation/items?bbox=7,54,16,58&datetime=" + start_date + "/" + end_date + "&limit=250000&sortorder=observed,DESC&api-key=" + key
     response = httpx.get(url, timeout=30.0)
+    print(url)
     print("Got Response")
     strikes_info = response.json()
     raw_strikes = strikes_info["features"]
@@ -34,11 +48,15 @@ def lightning(key):
     #     time.append(datetime.fromisoformat(strike["properties"]["observed"].replace("Z", "+00:00")))
     #     print(f"Coordinates: {strike["geometry"]["coordinates"]}, Intensity: {abs(strike["properties"]["amp"])}, Time: {time[i]:%d.%m.%y  %H:%M:%S}")
     strikes = []
+
+
     for raw_strike in raw_strikes:
         strike = {"timestamp": raw_strike["properties"]["observed"], "lat": raw_strike["geometry"]["coordinates"][1], "lon": raw_strike["geometry"]["coordinates"][0], "intensity": raw_strike["properties"]["amp"]}
         strikes.append(strike)
 
     df = pd.DataFrame(strikes)
+
+    print(df.head())
 
     gdf = gpd.GeoDataFrame(df, geometry=gpd.points_from_xy(df.lon, df.lat), crs="EPSG:4326")
 
@@ -52,8 +70,8 @@ def lightning(key):
 # print(list(ctx.providers))
 
 def read_parquet_to_plot():
-    gdf = gpd.read_parquet("lightning_2025.parquet")
-    print(gdf.head())
+    # gdf = gpd.read_parquet("lightning_2025.parquet")
+    # print(gdf.head())
 
     print(os.getcwd())
     print(os.path.exists("lightning_2025.parquet"))
@@ -66,9 +84,9 @@ def read_parquet_to_plot():
 
     gdf_web = gdf.to_crs("EPSG:3857")
 
-    fig, ax = plt.subplots(figsize=(10, 10))
+    fig, ax = plt.subplots(figsize=(40, 40))
 
-    gdf_web.plot(ax=ax, markersize=20, alpha=0.6, color="yellow")
+    gdf_web.plot(ax=ax, markersize=2, alpha=0.6, color="yellow")
 
     ctx.add_basemap(ax, source=ctx.providers.OpenStreetMap.Mapnik)
     plt.show()
@@ -81,11 +99,9 @@ def read_parquet_to_plot():
     # Example: only strikes in December
     # gdf_filtered = gdf[pd.to_datetime(gdf['timestamp']).dt.month == 12]
 
+def main(year):
+    # lightning(lightning_api_key, year)
+    read_parquet_to_plot()
 
-    # for strike in enumerate(strikes):
-    #     time.append(datetime.fromisoformat(strike["properties"]["observed"].replace("Z", "+00:00")))
-    #     print(f"Coordinates: {strike["geometry"]["coordinates"]}, Intensity: {abs(strike["properties"]["amp"])}, Time: {time[i]:%d.%m.%y  %H:%M:%S}")
 
-
-lightning(lightning_api_key)
-read_parquet_to_plot()
+main("2022")
