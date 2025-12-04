@@ -22,7 +22,8 @@ lightning_api_key = "501d635d-81f9-42f9-a36a-00fc85bb2bce"
 
 
 
-def lightning(key, year):
+
+def lightning(key, year, box_size="7,54,16,58"):
     input_year = year
     start_date = input_year + "-01-01T00:00:00Z"
     now_dt = datetime.now(timezone.utc)
@@ -34,7 +35,7 @@ def lightning(key, year):
 
     print(start_date, end_date)
 
-    url = "https://dmigw.govcloud.dk/v2/lightningdata/collections/observation/items?bbox=7,54,16,58&datetime=" + start_date + "/" + end_date + "&limit=250000&sortorder=observed,DESC&api-key=" + key
+    url = "https://dmigw.govcloud.dk/v2/lightningdata/collections/observation/items?bbox=" + box_size + "&datetime=" + start_date + "/" + end_date + "&limit=250000&sortorder=observed,DESC&api-key=" + key
     response = httpx.get(url, timeout=30.0)
     print(url)
     print("Got Response")
@@ -84,9 +85,9 @@ def read_parquet_to_plot():
 
     gdf_web = gdf.to_crs("EPSG:3857")
 
-    fig, ax = plt.subplots(figsize=(40, 40))
+    fig, ax = plt.subplots(figsize=(16, 16))
 
-    gdf_web.plot(ax=ax, markersize=2, alpha=0.6, color="yellow")
+    gdf_web.plot(ax=ax, markersize=10, alpha=1, color="orange")
 
     ctx.add_basemap(ax, source=ctx.providers.OpenStreetMap.Mapnik)
     plt.show()
@@ -100,7 +101,10 @@ def read_parquet_to_plot():
     # gdf_filtered = gdf[pd.to_datetime(gdf['timestamp']).dt.month == 12]
 
 def main(year):
-    # lightning(lightning_api_key, year)
+    box_size = "12.35,55.6,12.65,55.8"
+    lightning_api_key = "501d635d-81f9-42f9-a36a-00fc85bb2bce"
+    lightning(lightning_api_key, year, box_size
+              )
     read_parquet_to_plot()
 
 
