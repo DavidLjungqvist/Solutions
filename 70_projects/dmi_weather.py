@@ -102,11 +102,16 @@ def read_parquet_to_plot():
 
 def main(year):
     area_dk = "7,54,16,58"
+    # area_fo
+    # area_gl
+    area_bornholm = "14.6,54.96,15.2,55.30"
     area_copenhagen = "12.35,55.6,12.65,55.8"
-    area_n_jutland = "8.1,56.75,11.3,58" #Need ajusting
-    area_c_jutland = "8.1,56.75,11,55.65"
+    area_sea_lolland = "10.9,54.55,12.8,56.15"
+    area_n_jutland = "8.05,56.65,11.3,57.75" #Need ajusting
+    area_c_jutland = "8.05,55.65,11,56.70"
+    area_south_dk = "8.05,54.65,11,55.70"
     lightning_api_key = "501d635d-81f9-42f9-a36a-00fc85bb2bce"
-    lightning(lightning_api_key, year, area_n_jutland)
+    lightning(lightning_api_key, year, area_bornholm)
     read_parquet_to_plot()
 
 
