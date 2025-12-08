@@ -1,4 +1,5 @@
 from datetime import datetime, timezone
+import sys
 import os
 import httpx
 import pandas as pd
@@ -11,7 +12,7 @@ import pyarrow
 # import datashader
 # import holoviews
 
-lightning_api_key = "501d635d-81f9-42f9-a36a-00fc85bb2bce"
+# lightning_api_key = "501d635d-81f9-42f9-a36a-00fc85bb2bce"
 # print(now_iso)
 
 # end_of_year = input_year + "-12-31T23:59:59"
@@ -21,6 +22,16 @@ lightning_api_key = "501d635d-81f9-42f9-a36a-00fc85bb2bce"
 # bbox=7,54,16,58&
 
 
+
+
+
+class Lightning:
+    def __init__(self, time, lat, lon, intensity):
+        self.timestamp = time
+        self.latitude = lat
+        self.longitude = lon
+        self.intensity = abs(intensity)
+        self.intesity_group = 1 if self.intensity < 10 else 2 if self.intensity < 30 else 3  # Used for determining the color of points
 
 
 def lightning(key, year, box_size):
@@ -100,19 +111,38 @@ def read_parquet_to_plot():
     # Example: only strikes in December
     # gdf_filtered = gdf[pd.to_datetime(gdf['timestamp']).dt.month == 12]
 
-def main(year):
-    area_dk = "7,54,16,58"
-    # area_fo
+def main():
+    args = sys.argv[1:]
+    print(args)
+    # area_fo = "-7.85,61.3,-6.1,62.45"
     # area_gl
-    area_bornholm = "14.6,54.96,15.2,55.30"
+    area_dk = "7,54,16,58"
     area_copenhagen = "12.35,55.6,12.65,55.8"
-    area_sea_lolland = "10.9,54.55,12.8,56.15"
-    area_n_jutland = "8.05,56.65,11.3,57.75" #Need ajusting
+    area_sea_lolland = "10.85,54.55,12.8,56.15"
+    area_n_jutland = "8.05,56.65,11.3,57.75"
     area_c_jutland = "8.05,55.65,11,56.70"
     area_south_dk = "8.05,54.65,11,55.70"
+    area_bornholm = "14.6,54.96,15.2,55.32"
     lightning_api_key = "501d635d-81f9-42f9-a36a-00fc85bb2bce"
-    lightning(lightning_api_key, year, area_bornholm)
-    read_parquet_to_plot()
+    area_option_dict = {1: area_dk, 2: area_copenhagen, 3: area_sea_lolland, 4: area_n_jutland, 5: area_c_jutland, 6: area_south_dk, 7: area_bornholm}
+    year_input = "x"
+    while year_input == "x":
+        if len(args) >= 1:
+            map_code_input = int(args[0])
+        else:
+            print("Indtast et nummer for at se de følgende kort:\n1 : Danmark / 2 : København / 3 : Sjælland og Lolland / 4 : Nord Jylland / 5 : Midt Jylland / 6 : Syd Danmark / 7 : Bornholm")
+            map_code_input = input("Vælg et kort: ")
+        if len(args) >= 2:
+            year_input = args[1]
+        else:
+            print("For at vælge et andet område indtast 'x'")
+            year_input = input("Vælg et år: ")
+        while True:
+            selected_area = area_option_dict[int(map_code_input)]
+            lightning(lightning_api_key, year_input, selected_area)
+            read_parquet_to_plot()
+            year_input = input("Vælg et nyt år eller indtast 'x' for at vælge kort: ")
+            if year_input == "x":
+                break
 
-
-main("2022")
+main()
