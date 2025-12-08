@@ -23,7 +23,7 @@ lightning_api_key = "501d635d-81f9-42f9-a36a-00fc85bb2bce"
 
 
 
-def lightning(key, year, box_size="7,54,16,58"):
+def lightning(key, year, box_size):
     input_year = year
     start_date = input_year + "-01-01T00:00:00Z"
     now_dt = datetime.now(timezone.utc)
@@ -87,7 +87,7 @@ def read_parquet_to_plot():
 
     fig, ax = plt.subplots(figsize=(16, 16))
 
-    gdf_web.plot(ax=ax, markersize=10, alpha=1, color="orange")
+    gdf_web.plot(ax=ax, markersize=20, alpha=1, color="yellow", edgecolor="black")
 
     ctx.add_basemap(ax, source=ctx.providers.OpenStreetMap.Mapnik)
     plt.show()
@@ -101,10 +101,12 @@ def read_parquet_to_plot():
     # gdf_filtered = gdf[pd.to_datetime(gdf['timestamp']).dt.month == 12]
 
 def main(year):
-    box_size = "12.35,55.6,12.65,55.8"
+    area_dk = "7,54,16,58"
+    area_copenhagen = "12.35,55.6,12.65,55.8"
+    area_n_jutland = "8.1,56.75,11.3,58" #Need ajusting
+    area_c_jutland = "8.1,56.75,11,55.65"
     lightning_api_key = "501d635d-81f9-42f9-a36a-00fc85bb2bce"
-    lightning(lightning_api_key, year, box_size
-              )
+    lightning(lightning_api_key, year, area_n_jutland)
     read_parquet_to_plot()
 
 
