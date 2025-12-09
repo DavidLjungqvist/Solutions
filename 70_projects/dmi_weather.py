@@ -8,7 +8,6 @@ import matplotlib.pyplot as plt
 import contextily as ctx
 import fastparquet
 import pyarrow
-from matplotlib.pyplot import legend
 
 
 # import datashader
@@ -117,7 +116,7 @@ def lightning(key, year, box_size):
 # print(ctx.__version__)
 # print(list(ctx.providers))
 
-def read_parquet_to_plot():
+def read_parquet_to_plot(markersize):
     # gdf = gpd.read_parquet("lightning_2025.parquet")
     # print(gdf.head())
 
@@ -134,9 +133,11 @@ def read_parquet_to_plot():
 
     fig, ax = plt.subplots(figsize=(16, 16))
 
+    linewidth_dict = {3: 0.3, 10: 0.5, 30: 1.2}
+    linewidth = linewidth_dict[markersize]
     color_map = {0: "Yellow", 1: "Orange", 2: "Red"}
     gdf_web["color"] = gdf_web["intensity_group"].map(color_map)
-    gdf_web.plot(ax=ax, color=gdf_web["color"], markersize=20, alpha=1, edgecolor="black")
+    gdf_web.plot(ax=ax, color=gdf_web["color"], markersize=markersize, alpha=1, edgecolor="black", linewidth=linewidth) # linewidth = small: 0.25, medium: 0.5, large: 1.2
 
     # gdf_web.plot(ax=ax, markersize=20, alpha=1, color="yellow", edgecolor="black")
     ctx.add_basemap(ax, source=ctx.providers.OpenStreetMap.Mapnik)
@@ -163,7 +164,11 @@ def main():
     area_south_dk = "8.05,54.65,11,55.70"
     area_bornholm = "14.6,54.96,15.2,55.32"
     lightning_api_key = "501d635d-81f9-42f9-a36a-00fc85bb2bce"
+    small_marker = 3
+    medium_marker = 10
+    large_marker = 30
     area_option_dict = {1: area_dk, 2: area_copenhagen, 3: area_sea_lolland, 4: area_n_jutland, 5: area_c_jutland, 6: area_south_dk, 7: area_bornholm}
+    marker_size_dict = {1: small_marker, 2: large_marker, 3: medium_marker, 4: medium_marker, 5: medium_marker, 6: medium_marker, 7: large_marker}
     year_input = "x"
     while year_input == "x":
         if len(args) >= 1:
@@ -179,7 +184,8 @@ def main():
         while True:
             selected_area = area_option_dict[int(map_code_input)]
             lightning(lightning_api_key, year_input, selected_area)
-            read_parquet_to_plot()
+            markersize = marker_size_dict[int(map_code_input)]
+            read_parquet_to_plot(markersize)
             year_input = input("Vælg et nyt år eller indtast 'x' for at vælge kort: ")
             if year_input == "x":
                 break
