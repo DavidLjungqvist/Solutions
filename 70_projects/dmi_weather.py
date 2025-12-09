@@ -8,50 +8,76 @@ import matplotlib.pyplot as plt
 import contextily as ctx
 import fastparquet
 import pyarrow
+from matplotlib.pyplot import legend
+
 
 # import datashader
 # import holoviews
 
 # lightning_api_key = "501d635d-81f9-42f9-a36a-00fc85bb2bce"
-# print(now_iso)
 
 # end_of_year = input_year + "-12-31T23:59:59"
 # if end_of_year
 # end_time = now_iso
 
-# bbox=7,54,16,58&
 
 
 
+# class Lightning:
+#     def __init__(self, time, lat, lon, intensity):
+#         self.timestamp = time
+#         self.latitude = lat
+#         self.longitude = lon
+#         self.intensity = abs(intensity)
+#         self.intesity_group = 1 if self.intensity < 10 else 2 if self.intensity < 30 else 3  # Used for determining the color of points
 
 
 class Lightning:
-    def __init__(self, time, lat, lon, intensity):
-        self.timestamp = time
-        self.latitude = lat
-        self.longitude = lon
-        self.intensity = abs(intensity)
-        self.intesity_group = 1 if self.intensity < 10 else 2 if self.intensity < 30 else 3  # Used for determining the color of points
+    def __init__(self, data):
+        # self.id = index
+        # self.timestamp = data.properties.observed
+        self.timestamp = data["properties"]["observed"]
+        # self.latitude = data.geometry.coordinates
+        self.latitude = data["geometry"]["coordinates"][1]
+        # self.longitude = data.geometry.coordinates
+        self.longitude = data["geometry"]["coordinates"][0]
+        self.intensity = abs(data["properties"]["amp"])
+        self.intensity_group = 0 if self.intensity < 10 else 1 if self.intensity < 30 else 2  # Used for determining the color of points
 
 
-def lightning(key, year, box_size):
+def get_json(key, year, box_size):
     input_year = year
     start_date = input_year + "-01-01T00:00:00Z"
     now_dt = datetime.now(timezone.utc)
-    print(now_dt.year, input_year)
     if str(now_dt.year) == str(input_year):
         end_date = now_dt.isoformat().replace("+00:00", "Z")
     else:
         end_date = input_year + "-12-31T23:59:59Z"
 
-    print(start_date, end_date)
-
     url = "https://dmigw.govcloud.dk/v2/lightningdata/collections/observation/items?bbox=" + box_size + "&datetime=" + start_date + "/" + end_date + "&limit=250000&sortorder=observed,DESC&api-key=" + key
     response = httpx.get(url, timeout=30.0)
-    print(url)
-    print("Got Response")
-    strikes_info = response.json()
-    raw_strikes = strikes_info["features"]
+
+    return response.json()
+
+def lightning(key, year, box_size):
+    # input_year = year
+    # start_date = input_year + "-01-01T00:00:00Z"
+    # now_dt = datetime.now(timezone.utc)
+    # print(now_dt.year, input_year)
+    # if str(now_dt.year) == str(input_year):
+    #     end_date = now_dt.isoformat().replace("+00:00", "Z")
+    # else:
+    #     end_date = input_year + "-12-31T23:59:59Z"
+    #
+    # print(start_date, end_date)
+    #
+    # url = "https://dmigw.govcloud.dk/v2/lightningdata/collections/observation/items?bbox=" + box_size + "&datetime=" + start_date + "/" + end_date + "&limit=250000&sortorder=observed,DESC&api-key=" + key
+    # response = httpx.get(url, timeout=30.0)
+    # print(url)
+    # print("Got Response")
+    # strikes_info = response.json()
+    data = get_json(key, year, box_size)
+    raw_strikes = data["features"]
     # time = []
     # print(strikes)
     # for strike in strikes:
@@ -59,18 +85,28 @@ def lightning(key, year, box_size):
     # for i, strike in enumerate(strikes):
     #     time.append(datetime.fromisoformat(strike["properties"]["observed"].replace("Z", "+00:00")))
     #     print(f"Coordinates: {strike["geometry"]["coordinates"]}, Intensity: {abs(strike["properties"]["amp"])}, Time: {time[i]:%d.%m.%y  %H:%M:%S}")
-    strikes = []
+    obj_list = []
+    for strike in (raw_strikes):
+        obj = Lightning(strike)
+        obj_list.append(obj)
 
 
-    for raw_strike in raw_strikes:
-        strike = {"timestamp": raw_strike["properties"]["observed"], "lat": raw_strike["geometry"]["coordinates"][1], "lon": raw_strike["geometry"]["coordinates"][0], "intensity": raw_strike["properties"]["amp"]}
-        strikes.append(strike)
 
-    df = pd.DataFrame(strikes)
+    # strikes = []
+
+
+    # for raw_strike in raw_strikes:
+    #     strike = {"timestamp": raw_strike["properties"]["observed"], "lat": raw_strike["geometry"]["coordinates"][1], "lon": raw_strike["geometry"]["coordinates"][0], "intensity": raw_strike["properties"]["amp"]}
+    #     strikes.append(strike)
+
+    rows = [obj.__dict__ for obj in obj_list]
+
+    # df = pd.DataFrame(strikes)
+    df = pd.DataFrame(rows)
 
     print(df.head())
 
-    gdf = gpd.GeoDataFrame(df, geometry=gpd.points_from_xy(df.lon, df.lat), crs="EPSG:4326")
+    gdf = gpd.GeoDataFrame(df, geometry=gpd.points_from_xy(df.longitude, df.latitude), crs="EPSG:4326")
 
     print(gdf.head())
 
@@ -98,8 +134,11 @@ def read_parquet_to_plot():
 
     fig, ax = plt.subplots(figsize=(16, 16))
 
-    gdf_web.plot(ax=ax, markersize=20, alpha=1, color="yellow", edgecolor="black")
+    color_map = {0: "Yellow", 1: "Orange", 2: "Red"}
+    gdf_web["color"] = gdf_web["intensity_group"].map(color_map)
+    gdf_web.plot(ax=ax, color=gdf_web["color"], markersize=20, alpha=1, edgecolor="black")
 
+    # gdf_web.plot(ax=ax, markersize=20, alpha=1, color="yellow", edgecolor="black")
     ctx.add_basemap(ax, source=ctx.providers.OpenStreetMap.Mapnik)
     plt.show()
 
@@ -119,7 +158,7 @@ def main():
     area_dk = "7,54,16,58"
     area_copenhagen = "12.35,55.6,12.65,55.8"
     area_sea_lolland = "10.85,54.55,12.8,56.15"
-    area_n_jutland = "8.05,56.65,11.3,57.75"
+    area_n_jutland = "8.05,56.65,11.3,57.8"
     area_c_jutland = "8.05,55.65,11,56.70"
     area_south_dk = "8.05,54.65,11,55.70"
     area_bornholm = "14.6,54.96,15.2,55.32"
