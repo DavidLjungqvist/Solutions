@@ -135,7 +135,9 @@ def read_parquet_to_plot(markersize):
 
     linewidth_dict = {3: 0.3, 10: 0.5, 30: 1.2}
     linewidth = linewidth_dict[markersize]
+
     color_map = {0: "Yellow", 1: "Orange", 2: "Red"}
+
     gdf_web["color"] = gdf_web["intensity_group"].map(color_map)
     gdf_web.plot(ax=ax, color=gdf_web["color"], markersize=markersize, alpha=1, edgecolor="black", linewidth=linewidth) # linewidth = small: 0.25, medium: 0.5, large: 1.2
 
