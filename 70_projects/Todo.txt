@@ -1,10 +1,10 @@
 1. lav regioner ✔️
 2. user input ✔️
-3. API data fra dictionary til class attributes✔️ - Dict inholder måske metoder som bliver brugt i rows listen til pandas
+3. API data fra dictionary til class attributes✔️ - Dict inholder måske metoder som bliver brugt i rows listen til pandas ?
 4. farve baseret på styrke✔️
 5. størrelse baseret på hvilket kort✔️
-6. opret et modul til rå information som inkluder kort koordinater
-7. fiks input
+6. opret et modul til rå information som inkluder kort koordinater✔️
+7. fiks input✔️ - Beskyt mod user fejl
 8 Læg højere intensitet lyn på toppen af billedet
 9. importer og vis andre data fx:
 	- regn
