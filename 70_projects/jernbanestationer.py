@@ -26,9 +26,8 @@ response = requests.get(
 )
 
 
-response.raise_for_status()
 
-print(response.text[:200])
+# print(response.text[:200])
 
 df = pd.read_csv(StringIO(response.text))
 print(df.head())

@@ -18,7 +18,7 @@ print(samples[10000:10020])
 
 sample_rate_2 = 44100
 duration_2 = 2.0
-frequency = 261.63
+frequency = 349.228
 frequency_2 = frequency * 2
 frequency_3 = frequency * 3
 frequency_4 = frequency * 4
