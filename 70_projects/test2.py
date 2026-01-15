@@ -1,5 +1,7 @@
 import folium
-from folium.plugins import TimestampedGeoJson
+import pandas as pd
+# from folium.plugins import TimestampedGeoJson
+from folium.plugins.timeline import Timeline, TimelineSlider
 
 # m = folium.Map(location=[35.68159659061569, 139.76451516151428], zoom_start=16)
 #
@@ -61,28 +63,99 @@ from folium.plugins import TimestampedGeoJson
 # m.save("text.html")
 
 
-m = folium.Map(location=[35.6816, 139.7645], zoom_start=16)
+m = folium.Map(location=[55, 10], zoom_start=5)
 
-# Timeline expects a DataFrame-like structure
-data = """
-lon,lat,date,color
-139.764515,35.681597,1800-01-01,red
-139.759644,35.682590,1850-01-01,blue  
-139.757584,35.679505,1900-01-01,green
-139.763378,35.678041,1950-01-01,"#FFFFFF"
-"""
 
-df = pd.read_csv(pd.StringIO(data))  # or load your actual data
+df = pd.read_csv("stations.csv")
 
-Timeline(
+features = [
+    {
+        "type": "Feature",
+        "geometry": {"type": "Point", "coordinates": [row["lon"], row["lat"]]},
+        "properties": {"Start Dato": f"{int(row['year'])}-01-01"},
+    }
+    for _, row in df.iterrows()
+]
+
+print(features)
+
+timeline = Timeline(
     data=df,
-    time_col='date',           # your date column (ISO format)
-    position_col='lat',        # latitude
-    popup_col='color',         # optional popup info
+    time_col='year',           # your date column (ISO format)
+    position_col=['lat', 'lon'],    # optional popup info
     auto_play=True,
     loop=False,
     max_speed=10,
     add_last_point=True
 ).add_to(m)
 
-m.save("timeline_1800s.html")
+
+m.save("timeline_test.html")
+
+import folium
+import pandas as pd
+from folium.plugins import Timeline, TimelineSlider
+from folium.utilities import JsCode
+from folium.features import GeoJsonPopup
+
+m = folium.Map(location=[55, 10], zoom_start=5)
+
+# Load your stations.csv
+df = pd.read_csv("stations.csv")
+
+# Convert to Timeline GeoJSON format (each point gets start/end times)
+features = []
+for _, row in df.iterrows():
+    # Create start/end as same year (or adjust end as needed)
+    start_time = f"{int(row['year'])}-01-01"
+    end_time = f"{int(row['year'])}-12-31"  # or same as start_time
+
+    feature = {
+        "type": "Feature",
+        "geometry": {
+            "type": "Point",
+            "coordinates": [row['lon'], row['lat']]  # [lon, lat] order!
+        },
+        "properties": {
+            "start": start_time,
+            "end": end_time,
+            "name": f"Station {row.get('name', row.name)}"  # optional popup
+        }
+    }
+    features.append(feature)
+
+geojson_data = {
+    "type": "FeatureCollection",
+    "features": features
+}
+
+# Simple point style function (required)
+point_style = JsCode("""
+function (feature) {
+    return {
+        radius: 6,
+        color: "#ff7800",
+        weight: 2,
+        fillColor: "#ff7800",
+        fillOpacity: 0.7
+    };
+}
+""")
+
+# Create Timeline layer
+timeline = Timeline(
+    geojson_data,
+    style=point_style
+).add_to(m)
+
+# Add popup info
+GeoJsonPopup(fields=['name']).add_to(timeline)
+
+# Add TimelineSlider control
+TimelineSlider(
+    auto_play=False,
+    show_ticks=True,
+    enable_keyboard_controls=True
+).add_timelines(timeline).add_to(m)
+
+m.save("stations_timeline.html")
