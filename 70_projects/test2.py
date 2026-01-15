@@ -61,7 +61,7 @@ from folium.plugins.timeline import Timeline, TimelineSlider
 # ).add_to(m)
 #
 # m.save("text.html")
-
+#
 
 m = folium.Map(location=[55, 10], zoom_start=5)
 
