@@ -74,7 +74,32 @@ from folium.utilities import JsCode
 import requests
 from io import StringIO
 
-query = """
+
+# # nyeste query:
+# SELECT ?station ?stationLabel ?lat ?lon ?status ?statusLabel
+#  ?trainService ?trainServiceLabel ?openDate ?estDate ?endDate ?endDate2 ?endDate3
+# WHERE {
+#   ?station wdt:P31/wdt:P279* wd:Q55488 ;
+#            wdt:P17 wd:Q35 ;
+#            wdt:P625 ?coord ;
+#            wdt:P5817 ?status .
+#
+#   OPTIONAL { ?station wdt:P1192 ?trainService . }
+#   OPTIONAL { ?station wdt:P1619 ?openDate . }
+#   OPTIONAL { ?station wdt:P571  ?estDate . }
+#   OPTIONAL { ?station wdt:P582  ?endDate . }
+#   OPTIONAL { ?station wdt:P576  ?endDate2 . }
+#   OPTIONAL { ?station wdt:P3999 ?endDate3 . }
+#
+#   BIND(geof:latitude(?coord)  AS ?lat)
+#   BIND(geof:longitude(?coord) AS ?lon)
+#
+#   SERVICE wikibase:label {
+#     bd:serviceParam wikibase:language "da" .
+#   }
+# }
+
+station_query = """
     SELECT ?station ?stationLabel ?lat ?lon ?openDate ?estDate #?endDate ?endDate2 ?endDate3
     WHERE {
         ?station wdt:P31/wdt:P279* wd:Q55488 ;
@@ -97,6 +122,24 @@ query = """
           }
     }
 """
+metro_station_query = """
+    SELECT ?station ?stationLabel ?lat ?lon ?openDate ?estDate
+    WHERE {
+      ?station wdt:P31 wd:Q928830 ;
+               wdt:P17 wd:Q35 ;
+               wdt:P625 ?coord .
+    
+      OPTIONAL { ?station wdt:P1619 ?openDate . }
+      OPTIONAL { ?station wdt:P571  ?estDate . }
+    
+      BIND(geof:latitude(?coord)  AS ?lat)
+      BIND(geof:longitude(?coord) AS ?lon)
+    
+      SERVICE wikibase:label {
+        bd:serviceParam wikibase:language "da" .
+      }
+    }
+"""
 
 
 url = "https://query.wikidata.org/sparql"
@@ -107,7 +150,7 @@ headers = {
 
 response = requests.get(
     url,
-    params={"query": query},
+    params={"query": station_query},
     headers=headers
 )
 
@@ -116,6 +159,11 @@ df.to_csv("stations2.csv", index=False)
 
 m = folium.Map(location=[55, 10], zoom_start=6, tiles=None
                )
+raw_tiles = folium.TileLayer(
+    tiles="CartoDB Positron",
+    name="Raw map",
+    control=True
+)
 
 default_tiles = folium.TileLayer(
     tiles="OpenStreetMap",
@@ -123,13 +171,8 @@ default_tiles = folium.TileLayer(
     control=True
 )
 
-raw_tiles = folium.TileLayer(
-    tiles="CartoDB Positron",
-    name="Raw map",
-    control=True
-)
-default_tiles.add_to(m)
 raw_tiles.add_to(m)
+default_tiles.add_to(m)
 
 
 df = pd.read_csv("stations2.csv")
