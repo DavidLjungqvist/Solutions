@@ -74,63 +74,28 @@ from folium.utilities import JsCode
 import requests
 from io import StringIO
 
-
-# # nyeste query:
-# SELECT ?station ?stationLabel ?lat ?lon ?status ?statusLabel
-#  ?trainService ?trainServiceLabel ?openDate ?estDate ?endDate ?endDate2 ?endDate3
-# WHERE {
-#   ?station wdt:P31/wdt:P279* wd:Q55488 ;
-#            wdt:P17 wd:Q35 ;
-#            wdt:P625 ?coord ;
-#            wdt:P5817 ?status .
-#
-#   OPTIONAL { ?station wdt:P1192 ?trainService . }
-#   OPTIONAL { ?station wdt:P1619 ?openDate . }
-#   OPTIONAL { ?station wdt:P571  ?estDate . }
-#   OPTIONAL { ?station wdt:P582  ?endDate . }
-#   OPTIONAL { ?station wdt:P576  ?endDate2 . }
-#   OPTIONAL { ?station wdt:P3999 ?endDate3 . }
-#
-#   BIND(geof:latitude(?coord)  AS ?lat)
-#   BIND(geof:longitude(?coord) AS ?lon)
-#
-#   SERVICE wikibase:label {
-#     bd:serviceParam wikibase:language "da" .
-#   }
-# }
-
-station_query = """
-    SELECT ?station ?stationLabel ?lat ?lon ?openDate ?estDate #?endDate ?endDate2 ?endDate3
+def get_wikidata():
+    # # nyeste query:
+    station_query = """SELECT ?station ?stationLabel ?lat ?lon ?statusLabel
+     ?trainServiceLabel ?openDate ?estDate ?endDate ?endDate2 ?endDate3
     WHERE {
-        ?station wdt:P31/wdt:P279* wd:Q55488 ;
-                 wdt:P17 wd:Q35;
-             #    wdt:P131* wd:Q504125 ;
-                 wdt:P625 ?coord ;
-             #    wdt:P5817 wd:Q55654238 .
-                 OPTIONAL { ?station wdt:P1619 ?openDate . }
-                 OPTIONAL { ?station wdt:P571 ?estDate . }
-              #   OPTIONAL { ?station wdt:P582 ?endDate . }
-              #   OPTIONAL { ?station wdt:P576 ?endDate2 . }
-              #   OPTIONAL { ?station wdt:P3999 ?endDate3 . }
-    
-    
-      BIND(geof:latitude(?coord) AS ?lat)
-      BIND(geof:longitude(?coord) AS ?lon)
-    
-        SERVICE wikibase:label {
-          bd:serviceParam wikibase:language "en".
-          }
-    }
-"""
-metro_station_query = """
-    SELECT ?station ?stationLabel ?lat ?lon ?openDate ?estDate
-    WHERE {
-      ?station wdt:P31 wd:Q928830 ;
+      ?station wdt:P31/wdt:P279* wd:Q55488 ;
                wdt:P17 wd:Q35 ;
-               wdt:P625 ?coord .
+               wdt:P625 ?coord ;
+               wdt:P5817 ?status .
     
+      FILTER NOT EXISTS { ?station wdt:P31/wdt:P279* wd:Q28109487. }
+      FILTER NOT EXISTS { ?station wdt:P31/wdt:P279* wd:Q928830. }
+      FILTER NOT EXISTS { ?station wdt:P5817 wd:Q811683. }
+      FILTER NOT EXISTS { ?station wdt:P5817 wd:Q12377751. }
+      FILTER NOT EXISTS { ?station wdt:P5817 wd:Q55570340. }
+    
+      OPTIONAL { ?station wdt:P1192 ?trainService . }
       OPTIONAL { ?station wdt:P1619 ?openDate . }
       OPTIONAL { ?station wdt:P571  ?estDate . }
+      OPTIONAL { ?station wdt:P582  ?endDate . }
+      OPTIONAL { ?station wdt:P576  ?endDate2 . }
+      OPTIONAL { ?station wdt:P3999 ?endDate3 . }
     
       BIND(geof:latitude(?coord)  AS ?lat)
       BIND(geof:longitude(?coord) AS ?lon)
@@ -139,139 +104,205 @@ metro_station_query = """
         bd:serviceParam wikibase:language "da" .
       }
     }
-"""
-
-
-url = "https://query.wikidata.org/sparql"
-
-headers = {
-    "Accept": "text/csv"
-}
-
-response = requests.get(
-    url,
-    params={"query": station_query},
-    headers=headers
-)
-
-df = pd.read_csv(StringIO(response.text))
-df.to_csv("stations2.csv", index=False)
-
-m = folium.Map(location=[55, 10], zoom_start=6, tiles=None
-               )
-raw_tiles = folium.TileLayer(
-    tiles="CartoDB Positron",
-    name="Raw map",
-    control=True
-)
-
-default_tiles = folium.TileLayer(
-    tiles="OpenStreetMap",
-    name="Default map",
-    control=True
-)
-
-raw_tiles.add_to(m)
-default_tiles.add_to(m)
-
-
-df = pd.read_csv("stations2.csv")
-
-df["openDate"] = pd.to_datetime(df["openDate"], errors="coerce", utc=True)
-df["estDate"] = pd.to_datetime(df["estDate"], errors="coerce", utc=True)
-df["earliestDate"] = df[["openDate", "estDate"]].min(axis=1)
-df.to_csv("stations3.csv", index=False)
-
-stations_layer = folium.FeatureGroup(name="Railway stations", overlay=True)
-
-features = []
-for _, row in df.iterrows():
-    start_time = row["earliestDate"].isoformat()
-    # Make end date far in future - points stay visible after appearing
-    end_time = "2030-01-01"  # or "9999-12-31"
-
-    feature = {
-        "type": "Feature",
-        "geometry": {
-            "type": "Point",
-            "coordinates": [row['lon'], row['lat']]
-        },
-        "properties": {
-            "start": start_time,
-            "end": end_time,
-            "name": f"Station {row.get('name', '')} - {row['earliestDate']}"
+    """
+    # station_query = """
+    #     SELECT ?station ?stationLabel ?lat ?lon ?openDate ?estDate #?endDate ?endDate2 ?endDate3
+    #     WHERE {
+    #         ?station wdt:P31/wdt:P279* wd:Q55488 ;
+    #                  wdt:P17 wd:Q35;
+    #              #    wdt:P131* wd:Q504125 ;
+    #                  wdt:P625 ?coord ;
+    #              #    wdt:P5817 wd:Q55654238 .
+    #                  OPTIONAL { ?station wdt:P1619 ?openDate . }
+    #                  OPTIONAL { ?station wdt:P571 ?estDate . }
+    #               #   OPTIONAL { ?station wdt:P582 ?endDate . }
+    #               #   OPTIONAL { ?station wdt:P576 ?endDate2 . }
+    #               #   OPTIONAL { ?station wdt:P3999 ?endDate3 . }
+    #
+    #
+    #       BIND(geof:latitude(?coord) AS ?lat)
+    #       BIND(geof:longitude(?coord) AS ?lon)
+    #
+    #         SERVICE wikibase:label {
+    #           bd:serviceParam wikibase:language "en".
+    #           }
+    #     }
+    # """
+    metro_station_query = """
+        SELECT ?station ?stationLabel ?lat ?lon ?openDate ?estDate
+        WHERE {
+          ?station wdt:P31 wd:Q928830 ;
+                   wdt:P17 wd:Q35 ;
+                   wdt:P625 ?coord .
+        
+          OPTIONAL { ?station wdt:P1619 ?openDate . }
+          OPTIONAL { ?station wdt:P571  ?estDate . }
+        
+          BIND(geof:latitude(?coord)  AS ?lat)
+          BIND(geof:longitude(?coord) AS ?lon)
+        
+          SERVICE wikibase:label {
+            bd:serviceParam wikibase:language "da" .
+          }
         }
+    """
+
+
+    url = "https://query.wikidata.org/sparql"
+
+    headers = {
+        "Accept": "text/csv"
     }
-    features.append(feature)
+
+    response = requests.get(
+        url,
+        params={"query": station_query},
+        headers=headers
+    )
+
+    df = pd.read_csv(StringIO(response.text))
+    df.to_csv("stations4.csv", index=False)
 
 
-geojson_data = {
-    "type": "FeatureCollection",
-    "features": features
-}
+def sort_df():
+    df = pd.read_csv("stations4.csv")
 
-# Style for points
-point_style = JsCode("""
-function (feature) {
-    return {
-        radius: 6,
-        color: "#3186cc",
-        weight: 2,
-        fillColor: "#ff7800",
-        fillOpacity: 0.7
-    };
-}
-""")
+    df["openDate"] = pd.to_datetime(df["openDate"], errors="coerce", utc=True)
+    df["estDate"] = pd.to_datetime(df["estDate"], errors="coerce", utc=True)
+    df["earliest_date"] = df[["openDate", "estDate"]].min(axis=1)
+    df["endDate"] = pd.to_datetime(df["endDate"], errors="coerce", utc=True)
+    df["endDate2"] = pd.to_datetime(df["endDate2"], errors="coerce", utc=True)
+    df["endDate3"] = pd.to_datetime(df["endDate3"], errors="coerce", utc=True)
+    df["latest_date"] = df[["endDate", "endDate2", "endDate3"]].max(axis=1)
+    df = df.drop(columns=["openDate", "estDate", "endDate", "endDate2", "endDate3"])
+    df[["metro", "s_train", "regional", "intercity"]] = False
+    df.loc[df["trainServiceLabel"].str.contains("Linje", case=False, na=False), "s_train"] = True
+    df.loc[df["trainServiceLabel"].str.contains("L1|L2", case=False, na=False), "s_train"] = False
+    df.loc[df["trainServiceLabel"].str.contains("Regionaltog", case=False, na=False), "regional"] = True
+    df.loc[df["trainServiceLabel"].str.contains("Intercity", case=False, na=False), "intercity"] = True
 
-# timeline = Timeline(
-#     geojson_data,
-#     style=point_style
-# ).add_to(m)
+    df.to_csv("stations4after.csv", index=False)
 
-# timeline = Timeline(
-#     geojson_data,
-#     point_to_layer=JsCode("""
-#         function(feature, latlng) {
-#             return L.marker(latlng, {
-#                 icon: L.divIcon({
-#                     className: 'station-icon',
-#                     html: '🚉',
-#                     iconSize: [20, 20],
-#                     iconAnchor: [10, 10]
-#                 })
-#             });
-#         }
-#     """)
-# ).add_to(m)
+def generate_map():
 
-timeline = Timeline(
-    geojson_data,
-    point_to_layer=JsCode("""
-        function(feature, latlng) {
-            return L.marker(latlng, {
-                icon: L.divIcon({
-                    className: 'station-icon',
-                    html: '🚉',
-                    iconSize: [20, 20],
-                    iconAnchor: [10, 10]
-                })
-            });
+    m = folium.Map(location=[55, 10], zoom_start=6, tiles=None
+                   )
+    raw_tiles = folium.TileLayer(
+        tiles="CartoDB Positron",
+        name="Raw map",
+        control=True
+    )
+
+    default_tiles = folium.TileLayer(
+        tiles="OpenStreetMap",
+        name="Default map",
+        control=True
+    )
+
+    raw_tiles.add_to(m)
+    default_tiles.add_to(m)
+
+
+    df = pd.read_csv("stations2.csv")
+
+    df["openDate"] = pd.to_datetime(df["openDate"], errors="coerce", utc=True)
+    df["estDate"] = pd.to_datetime(df["estDate"], errors="coerce", utc=True)
+    df["earliestDate"] = df[["openDate", "estDate"]].min(axis=1)
+    df.to_csv("stations3.csv", index=False)
+
+    stations_layer = folium.FeatureGroup(name="Railway stations", overlay=True)
+
+    features = []
+    for _, row in df.iterrows():
+        start_time = row["earliestDate"].isoformat()
+        # Make end date far in future - points stay visible after appearing
+        end_time = "2030-01-01"  # or "9999-12-31"
+
+        feature = {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [row['lon'], row['lat']]
+            },
+            "properties": {
+                "start": start_time,
+                "end": end_time,
+                "name": f"Station {row.get('name', '')} - {row['earliestDate']}"
+            }
         }
+        features.append(feature)
+
+
+    geojson_data = {
+        "type": "FeatureCollection",
+        "features": features
+    }
+
+    # Style for points
+    point_style = JsCode("""
+    function (feature) {
+        return {
+            radius: 6,
+            color: "#3186cc",
+            weight: 2,
+            fillColor: "#ff7800",
+            fillOpacity: 0.7
+        };
+    }
     """)
-)
 
-stations_layer.add_child(timeline)
-stations_layer.add_to(m)
+    # timeline = Timeline(
+    #     geojson_data,
+    #     style=point_style
+    # ).add_to(m)
+
+    # timeline = Timeline(
+    #     geojson_data,
+    #     point_to_layer=JsCode("""
+    #         function(feature, latlng) {
+    #             return L.marker(latlng, {
+    #                 icon: L.divIcon({
+    #                     className: 'station-icon',
+    #                     html: '🚉',
+    #                     iconSize: [20, 20],
+    #                     iconAnchor: [10, 10]
+    #                 })
+    #             });
+    #         }
+    #     """)
+    # ).add_to(m)
+
+    timeline = Timeline(
+        geojson_data,
+        point_to_layer=JsCode("""
+            function(feature, latlng) {
+                return L.marker(latlng, {
+                    icon: L.divIcon({
+                        className: 'station-icon',
+                        html: '🚉',
+                        iconSize: [20, 20],
+                        iconAnchor: [10, 10]
+                    })
+                });
+            }
+        """)
+    )
+
+    stations_layer.add_child(timeline)
+    stations_layer.add_to(m)
 
 
-TimelineSlider(
-    auto_play=True,
-    loop=True,  # Loops back to start
-    show_ticks=True,
-    playback_duration=30000
-).add_timelines(timeline).add_to(m)
+    TimelineSlider(
+        auto_play=True,
+        loop=True,  # Loops back to start
+        show_ticks=True,
+        playback_duration=30000
+    ).add_timelines(timeline).add_to(m)
 
-folium.LayerControl(collapsed=False).add_to(m)
+    folium.LayerControl(collapsed=False).add_to(m)
 
 
-m.save("stations_persistent3.html")
+    m.save("stations_persistent3.html")
+
+# get_wikidata()
+sort_df()
