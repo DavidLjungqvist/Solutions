@@ -150,22 +150,37 @@ def get_wikidata():
 
     url = "https://query.wikidata.org/sparql"
 
+    # headers = {
+    #     "Accept": "text/csv"
+    # }
+    #
+    # response = requests.get(
+    #     url,
+    #     params={"query": station_query},
+    #     headers=headers
+    # )
+    #
+    # df = pd.read_csv(StringIO(response.text))
+    # df.to_csv("stations4.csv", index=False)
+
     headers = {
         "Accept": "text/csv"
     }
 
     response = requests.get(
         url,
-        params={"query": station_query},
+        params={"query": metro_station_query},
         headers=headers
     )
 
     df = pd.read_csv(StringIO(response.text))
-    df.to_csv("stations4.csv", index=False)
-
+    df.to_csv("stations4metro.csv", index=False)
 
 def sort_df():
     df = pd.read_csv("stations4.csv")
+
+    df = df.rename(columns={"stationLabel": "station_label"})
+
 
     df["openDate"] = pd.to_datetime(df["openDate"], errors="coerce", utc=True)
     df["estDate"] = pd.to_datetime(df["estDate"], errors="coerce", utc=True)
@@ -175,16 +190,78 @@ def sort_df():
     df["endDate3"] = pd.to_datetime(df["endDate3"], errors="coerce", utc=True)
     df["latest_date"] = df[["endDate", "endDate2", "endDate3"]].max(axis=1)
     df = df.drop(columns=["openDate", "estDate", "endDate", "endDate2", "endDate3"])
-    df[["metro", "s_train", "regional", "intercity"]] = False
+    df[["metro", "s_train", "regional", "intercity", "historic"]] = False
     df.loc[df["trainServiceLabel"].str.contains("Linje", case=False, na=False), "s_train"] = True
     df.loc[df["trainServiceLabel"].str.contains("L1|L2", case=False, na=False), "s_train"] = False
     df.loc[df["trainServiceLabel"].str.contains("Regionaltog", case=False, na=False), "regional"] = True
     df.loc[df["trainServiceLabel"].str.contains("Intercity", case=False, na=False), "intercity"] = True
+    df.loc[df["trainServiceLabel"].str.contains("M1|M2|M3|M4|Cityringer", case=False, na=False), "metro"] = True
+    df.loc[df["statusLabel"].str.contains("Q109551035", case=False, na=False), "historic"] = True
+    df = df.drop(
+        df[
+            df["statusLabel"].str.contains("nedlagt", case=False, na=False)
+            & df["latest_date"].isna()
+        ].index
+    )
+    df = df.drop(columns=["statusLabel", "trainServiceLabel"])
+### Merge Rows ###
 
-    df.to_csv("stations4after.csv", index=False)
+    bool_cols = [
+        "metro",
+        "s_train",
+        "regional",
+        "intercity",
+        "historic",
+    ]
+
+    other_cols = [
+        "station_label",
+        "lat",
+        "lon",
+        "earliest_date",
+        "latest_date",
+    ]
+
+    df_merged = (
+        df
+        .groupby("station", as_index=False)
+        .agg({
+            **{c: "first" for c in other_cols},
+            **{c: "any" for c in bool_cols},
+        })
+    )
+
+
+
+    # df.to_csv("stations4after.csv", index=False)
+    df_merged.to_csv("stations4after.csv", index=False)
+
+def sort_metro_df():
+
+    df = pd.read_csv("stations4metro.csv")
+
+    df = df.rename(columns={"stationLabel": "station_label"})
+    df["openDate"] = pd.to_datetime(df["openDate"], errors="coerce", utc=True)
+    df["estDate"] = pd.to_datetime(df["estDate"], errors="coerce", utc=True)
+    df["earliest_date"] = df[["openDate", "estDate"]].min(axis=1)
+    df = df.drop(columns=["openDate", "estDate"])
+    df["latest_date"] = ""
+    df["metro"] = True
+    df[["s_train", "regional", "intercity", "historic"]] = False
+
+    df.to_csv("stations4metroafter.csv", index=False)
+
+def merge_df():
+    df1 = pd.read_csv("stations4after.csv")
+    df2 = pd.read_csv("stations4metroafter.csv")
+
+    combined_df = pd.concat([df1, df2], ignore_index=True)
+    combined_df = combined_df.dropna(subset=["earliest_date"])
+    combined_df["latest_date"] = combined_df["latest_date"].fillna(pd.Timestamp("2030-01-01", tz="UTC"))
+
+    combined_df.to_csv("combined_stations.csv", index=False)
 
 def generate_map():
-
     m = folium.Map(location=[55, 10], zoom_start=6, tiles=None
                    )
     raw_tiles = folium.TileLayer(
@@ -202,21 +279,25 @@ def generate_map():
     raw_tiles.add_to(m)
     default_tiles.add_to(m)
 
+    #
+    # df = pd.read_csv("stations2.csv")
 
-    df = pd.read_csv("stations2.csv")
+    # df["openDate"] = pd.to_datetime(df["openDate"], errors="coerce", utc=True)
+    # df["estDate"] = pd.to_datetime(df["estDate"], errors="coerce", utc=True)
+    # df["earliestDate"] = df[["openDate", "estDate"]].min(axis=1)
+    # df.to_csv("stations3.csv", index=False)
 
-    df["openDate"] = pd.to_datetime(df["openDate"], errors="coerce", utc=True)
-    df["estDate"] = pd.to_datetime(df["estDate"], errors="coerce", utc=True)
-    df["earliestDate"] = df[["openDate", "estDate"]].min(axis=1)
-    df.to_csv("stations3.csv", index=False)
+    df = pd.read_csv("combined_stations.csv")
+    df["earliest_date"] = pd.to_datetime(df["earliest_date"], errors="coerce", utc=True)
+    df["latest_date"] = pd.to_datetime(df["latest_date"], errors="coerce", utc=True)
 
     stations_layer = folium.FeatureGroup(name="Railway stations", overlay=True)
 
     features = []
     for _, row in df.iterrows():
-        start_time = row["earliestDate"].isoformat()
+        start_time = row["earliest_date"].isoformat()
+        end_time = row["latest_date"].isoformat()
         # Make end date far in future - points stay visible after appearing
-        end_time = "2030-01-01"  # or "9999-12-31"
 
         feature = {
             "type": "Feature",
@@ -227,7 +308,7 @@ def generate_map():
             "properties": {
                 "start": start_time,
                 "end": end_time,
-                "name": f"Station {row.get('name', '')} - {row['earliestDate']}"
+                "name": f"Station {row.get('name', '')} - {row['earliest_date']}"
             }
         }
         features.append(feature)
@@ -302,7 +383,10 @@ def generate_map():
     folium.LayerControl(collapsed=False).add_to(m)
 
 
-    m.save("stations_persistent3.html")
+    m.save("stations_persistent4.html")
 
 # get_wikidata()
-sort_df()
+# sort_df()
+# sort_metro_df()
+# merge_df()
+generate_map()
