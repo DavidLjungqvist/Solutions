@@ -74,7 +74,7 @@ from folium.utilities import JsCode
 import requests
 from io import StringIO
 
-def get_wikidata():
+def get_wikidata_stations():
     # # nyeste query:
     station_query = """SELECT ?station ?stationLabel ?lat ?lon ?statusLabel
      ?trainServiceLabel ?openDate ?estDate ?endDate ?endDate2 ?endDate3
@@ -105,6 +105,19 @@ def get_wikidata():
       }
     }
     """
+    url = "https://query.wikidata.org/sparql"
+    headers = {
+        "Accept": "text/csv"
+    }
+
+    response = requests.get(
+        url,
+        params={"query": station_query},
+        headers=headers
+    )
+
+    df = pd.read_csv(StringIO(response.text))
+    df.to_csv("stations5.csv", index=False)
     # station_query = """
     #     SELECT ?station ?stationLabel ?lat ?lon ?openDate ?estDate #?endDate ?endDate2 ?endDate3
     #     WHERE {
@@ -128,6 +141,7 @@ def get_wikidata():
     #           }
     #     }
     # """
+def get_wikidata_metro_stations():
     metro_station_query = """
         SELECT ?station ?stationLabel ?lat ?lon ?openDate ?estDate
         WHERE {
@@ -148,21 +162,9 @@ def get_wikidata():
     """
 
 
+
+
     url = "https://query.wikidata.org/sparql"
-
-    # headers = {
-    #     "Accept": "text/csv"
-    # }
-    #
-    # response = requests.get(
-    #     url,
-    #     params={"query": station_query},
-    #     headers=headers
-    # )
-    #
-    # df = pd.read_csv(StringIO(response.text))
-    # df.to_csv("stations4.csv", index=False)
-
     headers = {
         "Accept": "text/csv"
     }
@@ -174,10 +176,10 @@ def get_wikidata():
     )
 
     df = pd.read_csv(StringIO(response.text))
-    df.to_csv("stations4metro.csv", index=False)
+    df.to_csv("stations5metro.csv", index=False)
 
 def sort_df():
-    df = pd.read_csv("stations4.csv")
+    df = pd.read_csv("stations5.csv")
 
     df = df.rename(columns={"stationLabel": "station_label"})
 
@@ -222,6 +224,9 @@ def sort_df():
         "latest_date",
     ]
 
+    dict1 = {c: "first" for c in other_cols}
+    dict2 = {c: "any" for c in bool_cols}
+
     df_merged = (
         df
         .groupby("station", as_index=False)
@@ -234,11 +239,11 @@ def sort_df():
 
 
     # df.to_csv("stations4after.csv", index=False)
-    df_merged.to_csv("stations4after.csv", index=False)
+    df_merged.to_csv("stations5after.csv", index=False)
 
 def sort_metro_df():
 
-    df = pd.read_csv("stations4metro.csv")
+    df = pd.read_csv("stations5metro.csv")
 
     df = df.rename(columns={"stationLabel": "station_label"})
     df["openDate"] = pd.to_datetime(df["openDate"], errors="coerce", utc=True)
@@ -249,11 +254,11 @@ def sort_metro_df():
     df["metro"] = True
     df[["s_train", "regional", "intercity", "historic"]] = False
 
-    df.to_csv("stations4metroafter.csv", index=False)
+    df.to_csv("stations5metroafter.csv", index=False)
 
 def merge_df():
-    df1 = pd.read_csv("stations4after.csv")
-    df2 = pd.read_csv("stations4metroafter.csv")
+    df1 = pd.read_csv("stations5after.csv")
+    df2 = pd.read_csv("stations5metroafter.csv")
 
     combined_df = pd.concat([df1, df2], ignore_index=True)
     combined_df = combined_df.dropna(subset=["earliest_date"])
@@ -377,7 +382,7 @@ def generate_map():
         auto_play=True,
         loop=True,  # Loops back to start
         show_ticks=True,
-        playback_duration=30000
+        playback_duration=60000
     ).add_timelines(timeline).add_to(m)
 
     folium.LayerControl(collapsed=False).add_to(m)
@@ -385,8 +390,9 @@ def generate_map():
 
     m.save("stations_persistent4.html")
 
-# get_wikidata()
-# sort_df()
+# get_wikidata_stations()
+# get_wikidata_metro_stations()
+sort_df()
 # sort_metro_df()
 # merge_df()
-generate_map()
+# generate_map()
