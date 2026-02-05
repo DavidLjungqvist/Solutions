@@ -7,7 +7,6 @@ from io import StringIO
 
 
 def get_wikidata_stations(): # Gets regular station data from wikidata and stores them as csv
-    # # nyeste query:
     station_query = """SELECT ?station ?stationLabel ?lat ?lon ?statusLabel
      ?trainServiceLabel ?openDate ?estDate ?endDate ?endDate2 ?endDate3
     WHERE {
@@ -113,8 +112,9 @@ def sort_df(): #
             & df["latest_date"].isna()
         ].index
     )
+    # df.to_csv("stations5debug.csv", index=False)
     df = df.drop(columns=["statusLabel", "trainServiceLabel"])
-### Merge Rows ###
+    ### Merge Rows ###
 
     bool_cols = [
         "metro",
@@ -164,37 +164,74 @@ def sort_metro_df():
 
     df.to_csv("stations5metroafter.csv", index=False)
 
+# def merge_df():
+#     df1 = pd.read_csv("stations5after.csv")
+#     df2 = pd.read_csv("stations5metroafter.csv")
+#
+#     combined_df = pd.concat([df1, df2], ignore_index=True)
+#     combined_df = combined_df.dropna(subset=["earliest_date"])
+#     combined_df["latest_date"] = combined_df["latest_date"].fillna(pd.Timestamp("2030-01-01", tz="UTC"))
+#
+#     combined_df.to_csv("combined_stations.csv", index=False)
+
 def merge_df():
     df1 = pd.read_csv("stations5after.csv")
     df2 = pd.read_csv("stations5metroafter.csv")
 
     combined_df = pd.concat([df1, df2], ignore_index=True)
-    combined_df = combined_df.dropna(subset=["earliest_date"])
-    combined_df["latest_date"] = combined_df["latest_date"].fillna(pd.Timestamp("2030-01-01", tz="UTC"))
 
-    combined_df.to_csv("combined_stations.csv", index=False)
+    bool_cols = ["metro", "s_train", "regional", "intercity", "historic"]
+    for col in ["earliest_date", "latest_date"]:
+        combined_df[col] = pd.to_datetime(combined_df[col], errors="coerce", utc=True)
+
+    df = (
+        combined_df
+        .groupby("station", as_index=False)
+        .agg({
+            "station_label": "first",
+            "lat": "first",
+            "lon": "first",
+            "earliest_date": "min",
+            "latest_date": "max",
+            **{c: "max" for c in bool_cols}
+        })
+
+    )
+
+    df = (
+        df
+        .groupby(["lon", "lat"], as_index=False)
+        .agg({
+            "station": "first",
+            "station_label": lambda x: max(x.astype(str), key=len),
+            "earliest_date": "min",
+            "latest_date": "max",
+            **{c: "max" for c in bool_cols}
+        })
+    )
+
+    df = df.dropna(subset=["earliest_date"])
+    df["latest_date"] = df["latest_date"].fillna(pd.Timestamp("2030-01-01", tz="UTC"))
+
+    df.to_csv("combined_stations.csv", index=False)
 
 def generate_map():
-    m = folium.Map(location=[55.575, 11], zoom_start=7, tiles=None
+    min_lon, max_lon = -1, 23
+    min_lat, max_lat = 52, 59
+
+    m = folium.Map(location=[55.575, 11], zoom_start=8, tiles=None,
+                   min_lat=min_lat, max_lat=max_lat, min_lon=min_lon, max_lon=max_lon, min_zoom=7, max_bounds=True
                    )
-    # m.get_root().html.add_child(folium.Element("""
-    # <script>
-    # map.createPane('metro');
-    # map.getPane('metro').style.zIndex = 400;
-    #
-    # map.createPane('generic');
-    # map.getPane('generic').style.zIndex = 410;
-    #
-    # map.createPane('s_train');
-    # map.getPane('s_train').style.zIndex = 500;
-    #
-    # map.createPane('regional');
-    # map.getPane('regional').style.zIndex = 600;
-    #
-    # map.createPane('intercity');
-    # map.getPane('intercity').style.zIndex = 700;
-    # </script>
-    # """))
+
+    sw = [min_lat, min_lon]  # southwest corner
+    ne = [max_lat, max_lon]  # northeast corner
+    m.fit_bounds([sw, ne])
+    m.options['maxBounds'] = [sw, ne]
+
+    # folium.CircleMarker([max_lat, min_lon], tooltip="Upper Left Corner").add_to(m)
+    # folium.CircleMarker([min_lat, min_lon], tooltip="Lower Left Corner").add_to(m)
+    # folium.CircleMarker([min_lat, max_lon], tooltip="Lower Right Corner").add_to(m)
+    # folium.CircleMarker([max_lat, max_lon], tooltip="Upper Right Corner").add_to(m)
 
     m.get_root().html.add_child(folium.Element("""
     <script>
@@ -213,21 +250,22 @@ def generate_map():
 
         map.createPane('s_train');
         map.getPane('s_train').style.zIndex = 500;
-        
-        map.createPane('dummy');
-        map.getPane('dummy').style.zIndex = 550;
 
         map.createPane('regional');
         map.getPane('regional').style.zIndex = 600;
 
         map.createPane('intercity');
         map.getPane('intercity').style.zIndex = 700;
-        
+
         map.createPane('historic');
-        map.getPane('intercity').style.zIndex = 800;
+        map.getPane('historic').style.zIndex = 800;
+        
+        map.createPane('info');
+        map.getPane('info').style.zIndex = 900;
     });
     </script>
     """))
+
 
     raw_tiles = folium.TileLayer(
         tiles="CartoDB Positron",
@@ -243,6 +281,7 @@ def generate_map():
 
     raw_tiles.add_to(m)
     default_tiles.add_to(m)
+
 
     df = pd.read_csv("combined_stations.csv")
     df["earliest_date"] = pd.to_datetime(df["earliest_date"], errors="coerce", utc=True)
@@ -260,6 +299,41 @@ def generate_map():
         end_time = row["latest_date"].isoformat()
         lon, lat = row["lon"], row["lat"]
 
+        lines = []
+        if row["metro"]:
+            lines.append("Metro")
+        if row["s_train"]:
+            lines.append("S-Tog")
+        if row["regional"]:
+            lines.append("Regional")
+        if row["intercity"]:
+            lines.append("InterCity")
+        if row["historic"]:
+            lines.append("Historisk")
+
+        if not lines:
+            lines.append("Ukendt")
+
+        lines_str = ", ".join(lines)
+
+        if True:
+            features.append({
+                "type": "Feature",
+                "geometry": {
+                    "type": "Point",
+                    "coordinates": [lon, lat]
+                },
+                "properties": {
+                    "start": start_time,
+                    "end": end_time,
+                    "layer": "info",
+                    "name": row["station_label"],
+                    "opened": row["earliest_date"].strftime("%Y"),
+                    "lines": lines_str
+
+                }
+            })
+
         if row["metro"]:
             features.append({
                 "type": "Feature",
@@ -270,7 +344,7 @@ def generate_map():
                 "properties": {
                     "start": start_time,
                     "end": end_time,
-                    "layer": "metro"
+                    "layer": "metro",
                 }
             })
         if not row["metro"]:
@@ -299,19 +373,7 @@ def generate_map():
                     "layer": "s_train"
                 }
             })
-        if True:
-            features.append({
-                "type": "Feature",
-                "geometry": {
-                    "type": "Point",
-                    "coordinates": [lon, lat]
-                },
-                "properties": {
-                    "start": start_time,
-                    "end": end_time,
-                    "layer": "dummy"
-                }
-            })
+
         if row["regional"]:
             features.append({
                 "type": "Feature",
@@ -351,41 +413,33 @@ def generate_map():
                     "layer": "historic"
                 }
             })
-        # else:
-        #     features.append({
-        #         "type": "Feature",
-        #         "geometry": {
-        #             "type": "Point",
-        #             "coordinates": [lon, lat]
-        #         },
-        #         "properties": {
-        #             "start": start_time,
-        #             "end": end_time,
-        #             "layer": "generic"
-        #         }
-        #     })
-
-
-        # feature = {
-        #     "type": "Feature",
-        #     "geometry": {
-        #         "type": "Point",
-        #         "coordinates": [lon, lat]
-        #     },
-        #     "properties": {
-        #         "start": start_time,
-        #         "end": end_time,
-        #         "name": f"Station {row.get('name', '')} - {row['earliest_date']}"
-        #     }
-        # }
-        # features.append(feature)
 
     style_fn = JsCode("""
     function(feature, latlng)  {
-    
-    
+        if (feature.properties.layer === "info")  {
+            var marker = L.circleMarker(latlng, {
+                pane: "info",
+                radius: 10,
+                color: "#000000",
+                opacity: 0,
+                weight: 2,
+                fillColor: "#000000",
+                fillOpacity: 0
+            });
+            marker.bindTooltip(
+                "<b>" + feature.properties.name + "</b>",
+                { sticky: true }
+            );
+
+            marker.bindPopup(
+                "<b>Station:</b> " + feature.properties.name +
+                "<br><b>Åbning:</b> " + feature.properties.opened +
+                "<br><b>Linjer:</b> " + feature.properties.lines
+            );
+        }
+
         if (feature.properties.layer === "metro")  {
-            return L.circleMarker(latlng,  {
+            var marker = L.circleMarker(latlng, {
                 pane: "metro",
                 radius: 9,
                 color: "#606060",
@@ -394,9 +448,9 @@ def generate_map():
                 fillOpacity: 1
             });
         }
-        
+
         if (feature.properties.layer === "generic")  {
-            return L.circleMarker(latlng,  {
+            var marker = L.circleMarker(latlng, {
                 pane: "generic",
                 radius: 9,
                 color: "#000000",
@@ -405,9 +459,9 @@ def generate_map():
                 fillOpacity: 1
             });
         }
-        
+
         if (feature.properties.layer === "s_train")  {
-            return L.circleMarker(latlng,  {
+            var marker = L.circleMarker(latlng, {
                 pane: "s_train",
                 radius: 6.5,
                 color: "#ff2020",
@@ -416,8 +470,9 @@ def generate_map():
                 fillOpacity: 1
             });
         }
+
         if (feature.properties.layer === "regional")  {
-            return L.circleMarker(latlng,  {
+            var marker = L.circleMarker(latlng, {
                 pane: "regional",
                 radius: 4.5,
                 color: "#4caf50",
@@ -426,20 +481,9 @@ def generate_map():
                 fillOpacity: 1
             });
         }
-        if (feature.properties.layer === "dummy")  {
-            return L.circleMarker(latlng,  {
-                pane: "dummy",
-                radius: 7,
-                color: "#4caf50",
-                opacity: 0,
-                weight: 1,
-                fillColor: "#4caf50",
-                fillOpacity: 0
-            });
-        }
-        
+
         if (feature.properties.layer === "intercity")  {
-            return L.circleMarker(latlng,  {
+            var marker = L.circleMarker(latlng, {
                 pane: "intercity",
                 radius: 3,
                 color: "#ffa500",
@@ -448,39 +492,33 @@ def generate_map():
                 fillOpacity: 1
             });
         }
+
         if (feature.properties.layer === "historic")  {
-            return L.circleMarker(latlng,  {
+            var marker = L.circleMarker(latlng, {
                 pane: "historic",
-                radius: 10,
+                radius: 9,
                 color: "#606060",
                 weight: 1,
                 fillColor: "#909090",
                 fillOpacity: 1
             });
         }
+        return marker;
     }
-        """)
+    """)
 
     geojson_data = {
         "type": "FeatureCollection",
         "features": features
     }
 
-
-# old timeline
     timeline = Timeline(
         geojson_data,
         pointToLayer=style_fn
     )
 
-    # timeline = Timeline(
-    #     geojson_data,
-    #     style=style_fn
-    # )
-
     stations_layer.add_child(timeline)
     stations_layer.add_to(m)
-
 
     TimelineSlider(
         auto_play=True,
@@ -491,12 +529,12 @@ def generate_map():
 
     folium.LayerControl(collapsed=False).add_to(m)
 
+    m.save("jernbanestationer_py_version.html")
 
-    m.save("stations_persistent4.html")
 
 # get_wikidata_stations()
 # get_wikidata_metro_stations()
 # sort_df()
 # sort_metro_df()
-# merge_df()
+merge_df()
 generate_map()
