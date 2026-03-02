@@ -1,3 +1,5 @@
+import seaborn as sns
+import matplotlib.pyplot as plt
 import pandas as pd
 
 df = pd.read_csv("GM-Population - Dataset - v7 - data-for-countries-etc-by-year.csv")
@@ -44,6 +46,18 @@ combined_df = combined_df[meta_cols + pop_cols + other_cols]
 
 combined_df.to_csv("combined_population.csv", index="CCA3")
 
+def plot():
+
+    plot_df = combined_df[["Country/Territory"] + pop_cols].set_index("Country/Territory")
+    plot_df = plot_df.rename(columns=lambda col_name: col_name.replace("pop_", ""))
+    # plot_df.to_csv("combined_population.csv", index="CCA3")
+    country = "United States"
+    row = plot_df.loc[country]
+    plt.title(country)
+    sns.lineplot(x=row.index, y=row.values)
+    plt.show()
 
 # def rename_with_pop(column_name):
 #     return f"pop_{column_name}" if str(column_name).isdigit() and len(str(column_name)) == 4 else column_name
+
+plot()
