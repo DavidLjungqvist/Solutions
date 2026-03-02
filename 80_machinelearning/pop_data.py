@@ -1,78 +1,49 @@
 import pandas as pd
 
 df = pd.read_csv("GM-Population - Dataset - v7 - data-for-countries-etc-by-year.csv")
-print(df.sample(10))
+print(df.sample(8))
 #print(df.shape[0]/300)
 
-df = df[df["time"] % 10 == 0]
-df = df[(df["time"] >= 1900) & (df["time"] < 1970)]
-print(df.head(10))
+df = df[df["time"] % 10 == 0]  # keep only decade years
+df = df[(df["time"] >= 1900) & (df["time"] < 1970)]  # keep only rows from 1900 to 1960
+print(df.head(8))
 
-wide = df.pivot_table(
+wide = df.pivot_table(  # pivot table from thin multiple entries to a wide one
     index="geo",
     columns="time",
     values="Population",
     aggfunc="first"
 )
-wide.index = wide.index.str.upper()
-print(wide.head(25))
+wide.index = wide.index.str.upper()  # change index to uppercase to match the index in ML1110_World_Population.csv
+print(wide.head(8))
 print(wide.shape)
 
 un_df = pd.read_csv("ML1110_World_Population.csv", index_col="CCA3")
-print(un_df.head(25))
+print(un_df.head(8))
 
-combined_df = un_df.join(wide, how="right")
+combined_df = wide.join(un_df, how="right")
 
 print(combined_df.head(25))
 
-combined_df.to_csv("combined_population.csv", index=False)
+# combined_df.to_csv("combined_population.csv", index=False)
+
+# combined_df = combined_df.rename(columns=lambda c: f"pop_{c}" if str(c).isdigit() and len(str(c)) == 4 else c)
+combined_df = combined_df.rename(columns=lambda col_name: str(col_name) if str(col_name).isdigit() and len(str(col_name)) == 4 else col_name)  # typecast cols from int to str
+# combined_df = combined_df.rename(columns=rename_with_pop())
 
 
+# add "pop_" to specific cols for uniform col names
+combined_df = combined_df.rename(columns=lambda col_name: "pop_" + col_name.lower().replace(" population", "") if ("19" in col_name) or ("20" in col_name) else col_name)
+
+pop_cols = sorted([col_name for col_name in combined_df.columns if col_name.startswith("pop_")])
+meta_cols = ["Rank", "Country/Territory", "Capital", "Continent"]
+other_cols = [col_name for col_name in combined_df.columns if col_name not in pop_cols + meta_cols]
+
+combined_df = combined_df[meta_cols + pop_cols + other_cols]
 
 
-#NEXT STEPS GUIDE:
-# detect year cols
-import re
+combined_df.to_csv("combined_population.csv", index="CCA3")
 
-year_cols = []
 
-for col in df.columns:
-    match = re.search(r"\b(18|19|20)\d{2}\b", col)
-    if match:
-        year_cols.append(col)
-
-print(year_cols)
-
-# sort numerically
-year_cols_sorted = sorted(
-    year_cols,
-    key=lambda x: int(re.search(r"\b(18|19|20)\d{2}\b", x).group())
-)
-
-print(year_cols_sorted)
-
-#melt using sorted cols
-df_long = df.melt(
-    id_vars=[col for col in df.columns if col not in year_cols],
-    value_vars=year_cols_sorted,
-    var_name="year",
-    value_name="population"
-)
-
-#exract clean numeric year
-df_long["year"] = (
-    df_long["year"]
-    .str.extract(r"(\d{4})")
-    .astype(int)
-)
-
-#sort
-df_long = df_long.sort_values("year")
-
-#plot
-import seaborn as sns
-import matplotlib.pyplot as plt
-
-sns.lineplot(data=df_long, x="year", y="population", hue="country")
-
-plt.show()
+# def rename_with_pop(column_name):
+#     return f"pop_{column_name}" if str(column_name).isdigit() and len(str(column_name)) == 4 else column_name
