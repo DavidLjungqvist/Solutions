@@ -23,15 +23,15 @@ test["Title"] = test["Title"].replace(title_replace_dict)
 
 high_status = ["the Countess", "Sir", "Lady", "Don", "Dona", "Jonkheer"]
 above_average_title = ["Dr", "Major", "Col"]
-hardcore_mfs = ["Capt", "Rev"]
+miscs = ["Capt", "Rev"]
 
 df["Title"] = df["Title"].replace(high_status, "High Status")
 df["Title"] = df["Title"].replace(above_average_title, "Improved Status")
-df["Title"] = df["Title"].replace(hardcore_mfs, "Mr")
+df["Title"] = df["Title"].replace(miscs, "Mr")
 
 test["Title"] = test["Title"].replace(high_status, "High Status")
 test["Title"] = test["Title"].replace(above_average_title, "Improved Status")
-test["Title"] = test["Title"].replace(hardcore_mfs, "Mr")
+test["Title"] = test["Title"].replace(miscs, "Mr")
 
 title_map = {title: i for i, title in enumerate(title_survival.index)}
 
@@ -85,12 +85,33 @@ df_test = pd.get_dummies(df_test, columns=["Embarked"])
 
 print(df_test.columns, df_train.columns)
 
+df_train["CabinDeck"] = df_train["Cabin"].str[0]
+df_test["CabinDeck"] = df_test["Cabin"].str[0]
+
+
+df_train["CabinDeck"] = df_train["CabinDeck"].fillna("Unknown")
+df_test["CabinDeck"] = df_test["CabinDeck"].fillna("Unknown")
+df_train = pd.get_dummies(df_train, columns=["CabinDeck"])
+df_test = pd.get_dummies(df_test, columns=["CabinDeck"])
+df_train, df_test = df_train.align(df_test, join="left", axis=1, fill_value=0)
+
+
+
+# df_train["FarePerPerson"] = df_train["Fare"] / (df_train["TotalFamily"] + 1)
+# df_test["FarePerPerson"] = df_test["Fare"] / (df_test["TotalFamily"] + 1)
+
 drop_cols = ["Name", "Sex", "SibSp", "Parch", "Ticket", "Cabin", "Title", "TotalFamily"]
+# drop_cols = ["Name", "Sex", "SibSp", "Parch", "Ticket", "Cabin", "Title"]
+
+# df_train["TotalFamily"] = df_train["TotalFamily"] + 1
+# df_test["TotalFamily"] = df_test["TotalFamily"] + 1
+
 
 passenger_ids = df_test.index
 
 df_train = df_train.drop(columns=drop_cols)
 df_test = df_test.drop(columns=drop_cols)
+
 
 X = df_train.drop("Survived", axis=1)
 y = df_train["Survived"]
@@ -121,6 +142,12 @@ submission = pd.DataFrame({
 
 submission.to_csv("submission.csv", index=False)
 
+importance = pd.Series(
+    model.feature_importances_,
+    index=X_train.columns
+).sort_values(ascending=False)
+
+print(importance)
 # print(len(passenger_ids) == len(predictions))
 
 
