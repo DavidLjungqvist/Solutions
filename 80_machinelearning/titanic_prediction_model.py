@@ -2,6 +2,9 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score
+from sklearn.model_selection import cross_val_score
+from xgboost import XGBClassifier
+import numpy as np
 
 df = pd.read_csv("titanic_train.csv", index_col="PassengerId")
 test = pd.read_csv("titanic_test.csv", index_col="PassengerId")
@@ -64,7 +67,7 @@ print(df.shape)
 test["Survived"] = 0
 combined_df = pd.concat([df, test], sort=False)
 combined_df["Age"] = combined_df["Age"].fillna(
-    combined_df.groupby(["Pclass", "Sex", "Title"])["Age"].transform("mean")
+    combined_df.groupby(["Pclass", "Sex", "Title_encoded"])["Age"].transform("median")
 )
 
 df_train = combined_df.loc[combined_df.index.isin(df.index)].copy()
@@ -77,7 +80,7 @@ df_train["Embarked"] = df_train["Embarked"].fillna(
     df_train["Embarked"].mode()[0]
 )
 df_test["Fare"] = df_test["Fare"].fillna(
-    df_test.groupby("Pclass")["Fare"].transform("mean")
+    df_test.groupby("Pclass")["Fare"].transform("median")
 )
 
 df_train = pd.get_dummies(df_train, columns=["Embarked"])
@@ -117,19 +120,34 @@ X = df_train.drop("Survived", axis=1)
 y = df_train["Survived"]
 X_test = df_test.drop("Survived", axis=1)
 
-X_train, X_val, y_train, y_val = train_test_split(
-    X, y, test_size=0.2, random_state=42
-)
+# X_train, X_val, y_train, y_val = train_test_split(
+#     X, y, test_size=0.2, random_state=42
+# )
 
-model = RandomForestClassifier(
+
+# model = RandomForestClassifier(
+#     n_estimators=200,
+#     random_state=42
+# )
+
+model = XGBClassifier(
     n_estimators=200,
-    random_state=42
+    learning_rate=0.05,
+    max_depth=4,
+    random_state=42,
+    use_label_encoder=False,
+    eval_metric="logloss"
 )
 
-model.fit(X_train, y_train)
+scores = cross_val_score(model, X, y, cv=5, scoring='accuracy')
 
-val_preds = model.predict(X_val)
-print(accuracy_score(y_val, val_preds))
+print("CV scores:", scores)
+print("Mean CV accuracy:", np.mean(scores))
+
+# model.fit(X_train, y_train)
+
+# val_preds = model.predict(X_val)
+# print(accuracy_score(y_val, val_preds))
 
 model.fit(X, y)
 
@@ -142,12 +160,16 @@ submission = pd.DataFrame({
 
 submission.to_csv("submission.csv", index=False)
 
-importance = pd.Series(
-    model.feature_importances_,
-    index=X_train.columns
-).sort_values(ascending=False)
+# importance = pd.Series(
+#     model.feature_importances_,
+#     index=X_train.columns
+# ).sort_values(ascending=False)
+#
+# print(importance)
 
-print(importance)
+
+
+
 # print(len(passenger_ids) == len(predictions))
 
 
