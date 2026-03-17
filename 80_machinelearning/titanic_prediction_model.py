@@ -98,6 +98,8 @@ df_train = pd.get_dummies(df_train, columns=["CabinDeck"])
 df_test = pd.get_dummies(df_test, columns=["CabinDeck"])
 df_train, df_test = df_train.align(df_test, join="left", axis=1, fill_value=0)
 
+df_train["TicketGroupSize"] = df_train.groupby("Ticket")["Ticket"].transform("count")
+df_test["TicketGroupSize"] = df_test.groupby("Ticket")["Ticket"].transform("count")
 
 
 # df_train["FarePerPerson"] = df_train["Fare"] / (df_train["TotalFamily"] + 1)
@@ -136,7 +138,7 @@ model = XGBClassifier(
     max_depth=4,
     random_state=42,
     use_label_encoder=False,
-    eval_metric="logloss"
+    eval_metric="auc"
 )
 
 scores = cross_val_score(model, X, y, cv=5, scoring='accuracy')
@@ -160,12 +162,12 @@ submission = pd.DataFrame({
 
 submission.to_csv("submission.csv", index=False)
 
-# importance = pd.Series(
-#     model.feature_importances_,
-#     index=X_train.columns
-# ).sort_values(ascending=False)
-#
-# print(importance)
+importance = pd.Series(
+    model.feature_importances_,
+    index=X.columns
+).sort_values(ascending=False)
+
+print(importance)
 
 
 
