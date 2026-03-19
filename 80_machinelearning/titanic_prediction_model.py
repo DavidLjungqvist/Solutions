@@ -42,8 +42,10 @@ df["Title_encoded"] = df["Title"].map(title_map)
 test["Title_encoded"] = test["Title"].map(title_map)
 
 gender_map = {"male": 0, "female": 1}
-df["Gender_encoded"] = df["Sex"].map(gender_map)
-test["Gender_encoded"] = test["Sex"].map(gender_map)
+# df["Gender_encoded"] = df["Sex"].map(gender_map)
+# test["Gender_encoded"] = test["Sex"].map(gender_map)
+
+
 
 df["TotalFamily"] = df["SibSp"] + df["Parch"]
 test["TotalFamily"] = test["SibSp"] + test["Parch"]
@@ -69,6 +71,8 @@ combined_df = pd.concat([df, test], sort=False)
 combined_df["Age"] = combined_df["Age"].fillna(
     combined_df.groupby(["Pclass", "Sex", "Title_encoded"])["Age"].transform("median")
 )
+
+combined_df = pd.get_dummies(combined_df, columns=["Sex"])
 
 df_train = combined_df.loc[combined_df.index.isin(df.index)].copy()
 df_test = combined_df.loc[combined_df.index.isin(test.index)].copy()
@@ -98,14 +102,18 @@ df_train = pd.get_dummies(df_train, columns=["CabinDeck"])
 df_test = pd.get_dummies(df_test, columns=["CabinDeck"])
 df_train, df_test = df_train.align(df_test, join="left", axis=1, fill_value=0)
 
-df_train["TicketGroupSize"] = df_train.groupby("Ticket")["Ticket"].transform("count")
-df_test["TicketGroupSize"] = df_test.groupby("Ticket")["Ticket"].transform("count")
+# df_train["TicketGroupSize"] = df_train.groupby("Ticket")["Ticket"].transform("count")
+# df_test["TicketGroupSize"] = df_test.groupby("Ticket")["Ticket"].transform("count")
+
+# df_train = pd.get_dummies(df_train, columns=["TicketGroupSize"])
+# df_test = pd.get_dummies(df_test, columns=["TicketGroupSize"])
 
 
 # df_train["FarePerPerson"] = df_train["Fare"] / (df_train["TotalFamily"] + 1)
 # df_test["FarePerPerson"] = df_test["Fare"] / (df_test["TotalFamily"] + 1)
 
-drop_cols = ["Name", "Sex", "SibSp", "Parch", "Ticket", "Cabin", "Title", "TotalFamily"]
+drop_cols = ["Name", "SibSp", "Parch", "Ticket", "Cabin", "Title", "TotalFamily",# "Sex"]
+             ]
 # drop_cols = ["Name", "Sex", "SibSp", "Parch", "Ticket", "Cabin", "Title"]
 
 # df_train["TotalFamily"] = df_train["TotalFamily"] + 1
