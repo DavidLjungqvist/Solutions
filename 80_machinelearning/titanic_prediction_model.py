@@ -2,6 +2,7 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score
+from lightgbm import LGBMClassifier
 from sklearn.model_selection import cross_val_score
 from xgboost import XGBClassifier
 import numpy as np
@@ -14,7 +15,7 @@ df["Title"] = df["Name"].str.extract(r',\s*([^\.]+)\.')
 test["Title"] = test["Name"].str.extract(r',\s*([^\.]+)\.')
 
 
-title_survival = df.groupby("Title")["Age"].mean().sort_values()
+# title_survival = df.groupby("Title")["Survived"].mean().sort_values()
 # print(title_survival)
 
 title_age = df.groupby("Title")["Age"].mean().sort_values()
@@ -32,6 +33,8 @@ df["Title"] = df["Title"].replace(high_status, "High Status")
 df["Title"] = df["Title"].replace(above_average_title, "Improved Status")
 df["Title"] = df["Title"].replace(miscs, "Mr")
 
+title_survival = df.groupby("Title")["Survived"].mean().sort_values()
+
 test["Title"] = test["Title"].replace(high_status, "High Status")
 test["Title"] = test["Title"].replace(above_average_title, "Improved Status")
 test["Title"] = test["Title"].replace(miscs, "Mr")
@@ -42,8 +45,8 @@ df["Title_encoded"] = df["Title"].map(title_map)
 test["Title_encoded"] = test["Title"].map(title_map)
 
 gender_map = {"male": 0, "female": 1}
-# df["Gender_encoded"] = df["Sex"].map(gender_map)
-# test["Gender_encoded"] = test["Sex"].map(gender_map)
+df["Gender_encoded"] = df["Sex"].map(gender_map)
+test["Gender_encoded"] = test["Sex"].map(gender_map)
 
 
 
@@ -69,10 +72,12 @@ print(df.shape)
 test["Survived"] = 0
 combined_df = pd.concat([df, test], sort=False)
 combined_df["Age"] = combined_df["Age"].fillna(
-    combined_df.groupby(["Pclass", "Sex", "Title_encoded"])["Age"].transform("median")
+    # combined_df.groupby(["Pclass", "Sex", "Title_encoded"])["Age"].transform("median")
+    # combined_df.groupby(["Pclass", "Sex"])["Age"].transform("median")
+    combined_df.groupby(["Sex", "Title_encoded"])["Age"].transform("median")
 )
 
-combined_df = pd.get_dummies(combined_df, columns=["Sex"])
+# combined_df = pd.get_dummies(combined_df, columns=["Sex"])
 
 df_train = combined_df.loc[combined_df.index.isin(df.index)].copy()
 df_test = combined_df.loc[combined_df.index.isin(test.index)].copy()
@@ -84,7 +89,8 @@ df_train["Embarked"] = df_train["Embarked"].fillna(
     df_train["Embarked"].mode()[0]
 )
 df_test["Fare"] = df_test["Fare"].fillna(
-    df_test.groupby("Pclass")["Fare"].transform("median")
+    # df_test.groupby("Pclass")["Fare"].transform("median")
+    df_test.groupby(["Pclass", "Title_encoded"])["Fare"].transform("median") # ADD median of both pclass and maybe title
 )
 
 df_train = pd.get_dummies(df_train, columns=["Embarked"])
@@ -100,7 +106,9 @@ df_train["CabinDeck"] = df_train["CabinDeck"].fillna("Unknown")
 df_test["CabinDeck"] = df_test["CabinDeck"].fillna("Unknown")
 df_train = pd.get_dummies(df_train, columns=["CabinDeck"])
 df_test = pd.get_dummies(df_test, columns=["CabinDeck"])
+
 df_train, df_test = df_train.align(df_test, join="left", axis=1, fill_value=0)
+
 
 # df_train["TicketGroupSize"] = df_train.groupby("Ticket")["Ticket"].transform("count")
 # df_test["TicketGroupSize"] = df_test.groupby("Ticket")["Ticket"].transform("count")
@@ -112,9 +120,13 @@ df_train, df_test = df_train.align(df_test, join="left", axis=1, fill_value=0)
 # df_train["FarePerPerson"] = df_train["Fare"] / (df_train["TotalFamily"] + 1)
 # df_test["FarePerPerson"] = df_test["Fare"] / (df_test["TotalFamily"] + 1)
 
-drop_cols = ["Name", "SibSp", "Parch", "Ticket", "Cabin", "Title", "TotalFamily",# "Sex"]
+
+
+drop_cols = ["Name", "SibSp", "Parch", "Ticket", "Cabin", "Title", "Sex", "TotalFamily", #"Age"]
              ]
 # drop_cols = ["Name", "Sex", "SibSp", "Parch", "Ticket", "Cabin", "Title"]
+
+
 
 # df_train["TotalFamily"] = df_train["TotalFamily"] + 1
 # df_test["TotalFamily"] = df_test["TotalFamily"] + 1
@@ -134,19 +146,26 @@ X_test = df_test.drop("Survived", axis=1)
 #     X, y, test_size=0.2, random_state=42
 # )
 
-
+# FORREST
 # model = RandomForestClassifier(
 #     n_estimators=200,
 #     random_state=42
 # )
 
-model = XGBClassifier(
+# XGBOOST
+# model = XGBClassifier(
+#     n_estimators=200,
+#     learning_rate=0.05,
+#     max_depth=4,
+#     random_state=42,
+#     use_label_encoder=False,
+#     eval_metric="auc"
+# )
+
+model = LGBMClassifier(
     n_estimators=200,
-    learning_rate=0.05,
-    max_depth=4,
-    random_state=42,
-    use_label_encoder=False,
-    eval_metric="auc"
+    learning_rate=0.03,
+    random_state=42
 )
 
 scores = cross_val_score(model, X, y, cv=5, scoring='accuracy')
