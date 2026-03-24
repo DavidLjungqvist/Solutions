@@ -1,9 +1,8 @@
 import pandas as pd
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import StratifiedKFold, train_test_split, cross_val_score
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score
 from lightgbm import LGBMClassifier
-from sklearn.model_selection import cross_val_score
 from xgboost import XGBClassifier
 import numpy as np
 
@@ -40,6 +39,13 @@ test["Title"] = test["Title"].replace(above_average_title, "Improved Status")
 test["Title"] = test["Title"].replace(miscs, "Mr")
 
 title_map = {title: i for i, title in enumerate(title_survival.index)}
+
+# title_map = {'Mr': 0,
+#  'Improved Status': 1,
+#  'Master': 3,
+#  'High Status': 2,
+#  'Miss': 4,
+#  'Mrs': 5}
 
 df["Title_encoded"] = df["Title"].map(title_map)
 test["Title_encoded"] = test["Title"].map(title_map)
@@ -168,7 +174,9 @@ model = LGBMClassifier(
     random_state=42
 )
 
-scores = cross_val_score(model, X, y, cv=5, scoring='accuracy')
+cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
+
+scores = cross_val_score(model, X, y, cv=cv, scoring='accuracy')
 
 print("CV scores:", scores)
 print("Mean CV accuracy:", np.mean(scores))
