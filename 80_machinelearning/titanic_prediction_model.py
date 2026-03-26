@@ -6,6 +6,13 @@ from lightgbm import LGBMClassifier
 from xgboost import XGBClassifier
 import numpy as np
 
+
+def read_data(train="titanic_train.csv", test="titanic_test.csv"):
+    df_train = pd.read_csv(train)
+    df_test = pd.read_csv(test)
+    return df_train, df_test
+
+
 df = pd.read_csv("titanic_train.csv", index_col="PassengerId")
 test = pd.read_csv("titanic_test.csv", index_col="PassengerId")
 
@@ -169,8 +176,8 @@ X_test = df_test.drop("Survived", axis=1)
 # )
 
 model = LGBMClassifier(
-    n_estimators=200,
-    learning_rate=0.03,
+    n_estimators=300,
+    learning_rate=0.02,
     random_state=42
 )
 
